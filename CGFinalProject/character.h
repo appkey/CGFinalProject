@@ -17,6 +17,7 @@ public:
 
     GLuint VAO, VBO, EBO;
     int indexCount;
+    glm::vec3 color;
 
     Character();
     ~Character();
@@ -24,6 +25,8 @@ public:
     void UpdateModelMatrix();
     void Draw(Shader& shader);
     void Move(float deltaTime, bool* keys);
+
+
 };
 
 #endif

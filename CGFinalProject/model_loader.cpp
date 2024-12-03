@@ -101,7 +101,7 @@ bool ModelLoader::LoadModel(const std::string& path, std::vector<Vertex>& vertic
                     }
 
                     // 컬러 (임의로 설정)
-                    vertex.color = glm::vec3(1.0f, 1.0f, 1.0f);
+   
 
                     vertices.push_back(vertex);
                     uniqueVertices[vertexIndices] = (unsigned int)(vertices.size() - 1);

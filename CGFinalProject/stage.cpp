@@ -6,6 +6,7 @@
 Stage::Stage(int number) {
     stageNumber = number;
     Init();
+    color = glm::vec3(0.7f, 0.7f, 0.7f);
 }
 
 Stage::~Stage() {
@@ -18,14 +19,14 @@ void Stage::Init() {
     // 큐브의 정점 데이터 (8개의 정점)
     std::vector<Vertex> vertices = {
         // 위치                       // 법선             // 색상
-        {{-0.5f, -0.5f, -0.5f},    {0.0f, 0.0f, -1.0f},   {1.0f, 1.0f, 1.0f}}, // 정점 0
-        {{ 0.5f, -0.5f, -0.5f},    {0.0f, 0.0f, -1.0f},   {1.0f, 1.0f, 1.0f}}, // 정점 1
-        {{ 0.5f,  0.5f, -0.5f},    {0.0f, 0.0f, -1.0f},   {1.0f, 1.0f, 1.0f}}, // 정점 2
-        {{-0.5f,  0.5f, -0.5f},    {0.0f, 0.0f, -1.0f},   {1.0f, 1.0f, 1.0f}}, // 정점 3
-        {{-0.5f, -0.5f,  0.5f},    {0.0f, 0.0f, 1.0f},    {1.0f, 1.0f, 1.0f}}, // 정점 4
-        {{ 0.5f, -0.5f,  0.5f},    {0.0f, 0.0f, 1.0f},    {1.0f, 1.0f, 1.0f}}, // 정점 5
-        {{ 0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 1.0f},    {1.0f, 1.0f, 1.0f}}, // 정점 6
-        {{-0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 1.0f},    {1.0f, 1.0f, 1.0f}}  // 정점 7
+        {{-0.5f, -0.5f, -0.5f},    {0.0f, 0.0f, -1.0f}},
+        {{ 0.5f, -0.5f, -0.5f},    {0.0f, 0.0f, -1.0f}},
+        {{ 0.5f,  0.5f, -0.5f},    {0.0f, 0.0f, -1.0f}},
+        {{-0.5f,  0.5f, -0.5f},    {0.0f, 0.0f, -1.0f}},
+        {{-0.5f, -0.5f,  0.5f},    {0.0f, 0.0f, 1.0f}},
+        {{ 0.5f, -0.5f,  0.5f},    {0.0f, 0.0f, 1.0f}},
+        {{ 0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 1.0f}},
+        {{-0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 1.0f} }
     };
 
     // 큐브의 인덱스 데이터
@@ -76,9 +77,6 @@ void Stage::Init() {
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, normal)));
     glEnableVertexAttribArray(1);
 
-    // 컬러 (location = 2)
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, color)));
-    glEnableVertexAttribArray(2);
 
     glBindVertexArray(0);
 }
@@ -87,11 +85,12 @@ void Stage::Draw(Shader& shader) {
     glm::mat4 model = glm::mat4(1.0f);
 
     model = glm::translate(model, glm::vec3(0.0f, -1.f, -10.0f)); 
-    model = glm::scale(model, glm::vec3(6.0f, 0.5f, 20.0f)); 
+    model = glm::scale(model, glm::vec3(15.0f, 0.5f, 40.0f)); 
 
 
     shader.Use();
     glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, &model[0][0]);
+    glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), color.x, color.y, color.z); //
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);

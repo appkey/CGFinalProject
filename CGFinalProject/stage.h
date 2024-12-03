@@ -19,6 +19,9 @@ public:
     void Init();
     void Draw(Shader& shader);
     void Update(float deltaTime);
+
+private:
+    glm::vec3 color;
 };
 
 #endif

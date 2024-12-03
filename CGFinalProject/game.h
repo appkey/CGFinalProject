@@ -5,6 +5,8 @@
 #include "character.h"
 #include "camera.h"
 #include "shader.h"
+#include "obstacle.h"
+#include <vector>
 
 class Game {
 public:
@@ -13,6 +15,7 @@ public:
     Character* character;
     Camera* camera;
     Shader* shader;
+    std::vector<Obstacle*> obstacles;
 
     Game();
     ~Game();

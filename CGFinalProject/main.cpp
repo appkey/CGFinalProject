@@ -15,6 +15,8 @@ int main(int argc, char** argv) {
         fprintf(stderr, "GLEW 초기화 실패: %s\n", glewGetErrorString(err));
         return -1;
     }
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
 
     // 나머지 초기화...
     Game game;

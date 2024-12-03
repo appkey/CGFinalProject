@@ -10,6 +10,7 @@ Game::Game() {
     currentStage = 1;
     stage = nullptr;
     character = new Character();
+    
     camera = new Camera();
     shader = new Shader("vertex_shader.glsl", "fragment_shader.glsl");
     deltaTime = 0.0f;
@@ -27,6 +28,13 @@ Game::~Game() {
 
 void Game::Init() {
     stage = new Stage(currentStage);
+    for (int i = 0; i < 10; ++i) {
+        obstacles.push_back(new Obstacle(glm::vec3(-4.0f, 0.5f, -4.f * i )));
+    }
+    for (int i = 0; i < 10; ++i) {
+        obstacles.push_back(new Obstacle(glm::vec3(+4.0f, 0.5f,-4.f * i+1.f)));
+    }
+
 }
 
 void Game::Run() {
@@ -48,9 +56,11 @@ void Game::Run() {
 void Game::Update(float deltaTime) {
     character->Move(deltaTime, keys);
     stage->Update(deltaTime);
-
+    for (auto& obs : obstacles) {
+        obs->Update(deltaTime);
+    }
     // 카메라 위치 업데이트 (예시)
-    camera->Position = character->Position + glm::vec3(0.0f, 5.0f, 10.0f);
+    camera->Position = character->Position + glm::vec3(0.0f, 3.0f, 7.0f);
     camera->Target = character->Position;
 }
 
@@ -61,18 +71,21 @@ void Game::Render() {
 
     // 뷰 및 프로젝션 행렬 설정
     glm::mat4 view = camera->GetViewMatrix();
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1600.0f / 900.0f, 0.1f, 100.0f);
 
     glUniformMatrix4fv(glGetUniformLocation(shader->Program, "view"), 1, GL_FALSE, &view[0][0]);
     glUniformMatrix4fv(glGetUniformLocation(shader->Program, "projection"), 1, GL_FALSE, &projection[0][0]);
 
     // 조명 설정
-    glm::vec3 lightPos = glm::vec3(0.0f, 5.0f, 5.0f);
+    glm::vec3 lightPos = glm::vec3(0.0f, 3.0f, -5.0f);
     glUniform3fv(glGetUniformLocation(shader->Program, "lightPos"), 1, &lightPos[0]);
     glUniform3fv(glGetUniformLocation(shader->Program, "viewPos"), 1, &camera->Position[0]);
 
     stage->Draw(*shader);
     character->Draw(*shader);
+    for (auto& obs : obstacles) {
+        obs->Draw(*shader);
+    }
 
     glutSwapBuffers();
 }

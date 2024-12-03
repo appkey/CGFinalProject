@@ -7,11 +7,12 @@ in vec3 VertexColor;
 
 uniform vec3 lightPos;
 uniform vec3 viewPos;
+uniform vec3 objectColor;
 
 void main(){
     // Ambient
-    float ambientStrength = 0.1;
-    vec3 ambient = ambientStrength * VertexColor;
+    float ambientStrength = 0.5;
+    vec3 ambient = ambientStrength * objectColor;
 
     // Diffuse
     vec3 norm = normalize(Normal);
@@ -26,6 +27,6 @@ void main(){
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     vec3 specular = specularStrength * spec * vec3(1.0);
 
-    //vec3 result = ambient + diffuse + specular;
-    FragColor = vec4( VertexColor, 1.0);
+    vec3 result = ambient + diffuse + specular;
+    FragColor = vec4( result, 1.0);
 }

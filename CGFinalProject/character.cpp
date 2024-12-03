@@ -6,6 +6,7 @@ Character::Character() {
     Position = glm::vec3(0.0f, 0.0f, 0.0f);
     Scale = glm::vec3(1.0f);
     Rotation = glm::vec3(0.0f);
+    color = glm::vec3(1.0f, 0.0f, 0.0f);
     Init();
 }
 
@@ -19,14 +20,14 @@ void Character::Init() {
     // 큐브의 정점 데이터 (8개의 정점)
     std::vector<Vertex> vertices = {
         // 위치                       // 법선             // 색상
-        {{-0.5f, -0.5f, -0.5f},    {0.0f, 0.0f, 0.0f},   {1.0f, 0.0f, 0.0f}}, // 정점 0
-        {{ 0.5f, -0.5f, -0.5f},    {0.0f, 0.0f, 0.0f},   {1.0f, 0.0f, 0.0f}}, // 정점 1
-        {{ 0.5f,  0.5f, -0.5f},    {0.0f, 0.0f, 0.0f},   {1.0f, 0.0f, 0.0f}}, // 정점 2
-        {{-0.5f,  0.5f, -0.5f},    {0.0f, 0.0f, 0.0f},   {1.0f, 0.0f, 0.0f}}, // 정점 3
-        {{-0.5f, -0.5f,  0.5f},    {0.0f, 0.0f, 0.0f},   {1.0f, 0.0f, 0.0f}}, // 정점 4
-        {{ 0.5f, -0.5f,  0.5f},    {0.0f, 0.0f, 0.0f},   {1.0f, 0.0f, 0.0f}}, // 정점 5
-        {{ 0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 0.0f},   {1.0f, 0.0f, 0.0f}}, // 정점 6
-        {{-0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 0.0f},   {1.5f, 0.0f, 0.0f}}  // 정점 7
+        {{-0.5f, -0.5f, -0.5f},    {0.0f, 0.0f, 0.0f}}, // 정점 0
+        {{ 0.5f, -0.5f, -0.5f},    {0.0f, 0.0f, 0.0f}}, // 정점 1
+        {{ 0.5f,  0.5f, -0.5f},    {0.0f, 0.0f, 0.0f}}, // 정점 2
+        {{-0.5f,  0.5f, -0.5f},    {0.0f, 0.0f, 0.0f}}, // 정점 3
+        {{-0.5f, -0.5f,  0.5f},    {0.0f, 0.0f, 0.0f}}, // 정점 4
+        {{ 0.5f, -0.5f,  0.5f},    {0.0f, 0.0f, 0.0f}}, // 정점 5
+        {{ 0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 0.0f}}, // 정점 6
+        {{-0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 0.0f}}  // 정점 7
     };
 
     // 큐브의 인덱스 데이터
@@ -77,10 +78,6 @@ void Character::Init() {
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, normal)));
     glEnableVertexAttribArray(1);
 
-    // 컬러 (location = 2)
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, color)));
-    glEnableVertexAttribArray(2);
-
     glBindVertexArray(0);
 }
 
@@ -97,7 +94,7 @@ void Character::Draw(Shader& shader) {
     UpdateModelMatrix();
     shader.Use();
     glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, &ModelMatrix[0][0]);
-
+    glUniform3f(glGetUniformLocation(shader.Program, "objectColor"),color.x,color.y,color.z); // 빨간색
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
