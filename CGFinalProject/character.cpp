@@ -3,7 +3,7 @@
 #include <iostream>
 
 Character::Character() {
-    Position = glm::vec3(0.0f, 0.0f, 0.0f);
+    Position = glm::vec3(0.0f, 0.0f, 13.5f);
     Scale = glm::vec3(1.0f);
     Rotation = glm::vec3(0.0f);
     color = glm::vec3(1.0f, 0.0f, 0.0f);
@@ -17,44 +17,44 @@ Character::~Character() {
 }
 
 void Character::Init() {
-    // ≈•∫Í¿« ¡§¡° µ•¿Ã≈Õ (8∞≥¿« ¡§¡°)
+    // ÌÅêÎ∏åÏùò Ï†ïÏ†ê Îç∞Ïù¥ÌÑ∞ (8Í∞úÏùò Ï†ïÏ†ê)
     std::vector<Vertex> vertices = {
-        // ¿ßƒ°                       // π˝º±             // ªˆªÛ
-        {{-0.5f, -0.5f, -0.5f},    {0.0f, 0.0f, 0.0f}}, // ¡§¡° 0
-        {{ 0.5f, -0.5f, -0.5f},    {0.0f, 0.0f, 0.0f}}, // ¡§¡° 1
-        {{ 0.5f,  0.5f, -0.5f},    {0.0f, 0.0f, 0.0f}}, // ¡§¡° 2
-        {{-0.5f,  0.5f, -0.5f},    {0.0f, 0.0f, 0.0f}}, // ¡§¡° 3
-        {{-0.5f, -0.5f,  0.5f},    {0.0f, 0.0f, 0.0f}}, // ¡§¡° 4
-        {{ 0.5f, -0.5f,  0.5f},    {0.0f, 0.0f, 0.0f}}, // ¡§¡° 5
-        {{ 0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 0.0f}}, // ¡§¡° 6
-        {{-0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 0.0f}}  // ¡§¡° 7
+        // ÏúÑÏπò                       // Î≤ïÏÑ†             // ÏÉâÏÉÅ
+        {{-0.5f, -0.5f, -0.5f},    {0.0f, 0.0f, 0.0f}}, // Ï†ïÏ†ê 0
+        {{ 0.5f, -0.5f, -0.5f},    {0.0f, 0.0f, 0.0f}}, // Ï†ïÏ†ê 1
+        {{ 0.5f,  0.5f, -0.5f},    {0.0f, 0.0f, 0.0f}}, // Ï†ïÏ†ê 2
+        {{-0.5f,  0.5f, -0.5f},    {0.0f, 0.0f, 0.0f}}, // Ï†ïÏ†ê 3
+        {{-0.5f, -0.5f,  0.5f},    {0.0f, 0.0f, 0.0f}}, // Ï†ïÏ†ê 4
+        {{ 0.5f, -0.5f,  0.5f},    {0.0f, 0.0f, 0.0f}}, // Ï†ïÏ†ê 5
+        {{ 0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 0.0f}}, // Ï†ïÏ†ê 6
+        {{-0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 0.0f}}  // Ï†ïÏ†ê 7
     };
 
-    // ≈•∫Í¿« ¿Œµ¶Ω∫ µ•¿Ã≈Õ
+    // ÌÅêÎ∏åÏùò Ïù∏Îç±Ïä§ Îç∞Ïù¥ÌÑ∞
     std::vector<unsigned int> indices = {
-        // æ’∏È
+        // ÏïûÎ©¥
         4, 5, 6,
         6, 7, 4,
-        // µﬁ∏È
+        // Îí∑Î©¥
         0, 1, 2,
         2, 3, 0,
-        // øﬁ¬  ∏È
+        // ÏôºÏ™Ω Î©¥
         0, 4, 7,
         7, 3, 0,
-        // ø¿∏•¬  ∏È
+        // Ïò§Î•∏Ï™Ω Î©¥
         1, 5, 6,
         6, 2, 1,
-        // æ∆∑° ∏È
+        // ÏïÑÎûò Î©¥
         0, 1, 5,
         5, 4, 0,
-        // ¿ß ∏È
+        // ÏúÑ Î©¥
         3, 2, 6,
         6, 7, 3
     };
 
     indexCount = static_cast<int>(indices.size());
 
-    // VAO, VBO, EBO ª˝º∫ π◊ º≥¡§
+    // VAO, VBO, EBO ÏÉùÏÑ± Î∞è ÏÑ§Ï†ï
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
@@ -69,12 +69,12 @@ void Character::Init() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
 
-    // ¡§¡° º”º∫ º≥¡§
-    // ¿ßƒ° (location = 0)
+    // Ï†ïÏ†ê ÏÜçÏÑ± ÏÑ§Ï†ï
+    // ÏúÑÏπò (location = 0)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, position)));
     glEnableVertexAttribArray(0);
 
-    // ≥Î∏÷ (location = 1)
+    // ÎÖ∏Î©Ä (location = 1)
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, normal)));
     glEnableVertexAttribArray(1);
 
@@ -94,7 +94,7 @@ void Character::Draw(Shader& shader) {
     UpdateModelMatrix();
     shader.Use();
     glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, &ModelMatrix[0][0]);
-    glUniform3f(glGetUniformLocation(shader.Program, "objectColor"),color.x,color.y,color.z); // ª°∞£ªˆ
+    glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), color.x, color.y, color.z); // Îπ®Í∞ÑÏÉâ
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
