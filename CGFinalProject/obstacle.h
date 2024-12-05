@@ -21,6 +21,7 @@ public:
     glm::vec3 Rotation; // Rotation angles in degrees
     glm::mat4 ModelMatrix;
     glm::vec3 color;
+    glm::vec3 direction;
 
     GLuint VAO, VBO, EBO, NBO;
     int indexCount;
