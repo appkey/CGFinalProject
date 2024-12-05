@@ -6,7 +6,7 @@
 Stage::Stage(int number) {
     stageNumber = number;
     Init();
-    color = glm::vec3(0.7f, 0.7f, 0.7f);
+    color = glm::vec3{0.7f, 0.7f, 0.7f};
 }
 
 Stage::~Stage() {
@@ -16,9 +16,9 @@ Stage::~Stage() {
 }
 
 void Stage::Init() {
-    // Å¥ºêÀÇ Á¤Á¡ µ¥ÀÌÅÍ (8°³ÀÇ Á¤Á¡)
+    // íë¸Œì˜ ì •ì  ë°ì´í„° (8ê°œì˜ ì •ì )
     std::vector<Vertex> vertices = {
-        // À§Ä¡                       // ¹ı¼±             // »ö»ó
+        // ìœ„ì¹˜                       // ë²•ì„              // ìƒ‰ìƒ
         {{-0.5f, -0.5f, -0.5f},    {0.0f, 0.0f, -1.0f}},
         {{ 0.5f, -0.5f, -0.5f},    {0.0f, 0.0f, -1.0f}},
         {{ 0.5f,  0.5f, -0.5f},    {0.0f, 0.0f, -1.0f}},
@@ -26,34 +26,61 @@ void Stage::Init() {
         {{-0.5f, -0.5f,  0.5f},    {0.0f, 0.0f, 1.0f}},
         {{ 0.5f, -0.5f,  0.5f},    {0.0f, 0.0f, 1.0f}},
         {{ 0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 1.0f}},
-        {{-0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 1.0f} }
+        {{-0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 1.0f}},
+        {{-0.2f, -0.5f, -0.6f},    {0.0f, 0.0f, -1.0f}},
+        {{ 0.2f, -0.5f, -0.6f},    {0.0f, 0.0f, -1.0f}},
+        {{ 0.2f,  0.5f, -0.6f},    {0.0f, 0.0f, -1.0f}},
+        {{-0.2f,  0.5f, -0.6f},    {0.0f, 0.0f, -1.0f}},
+        {{-0.2f, -0.5f,  0.6f},    {0.0f, 0.0f, 1.0f}},
+        {{ 0.2f, -0.5f,  0.6f},    {0.0f, 0.0f, 1.0f}},
+        {{ 0.2f,  0.5f,  0.6f},    {0.0f, 0.0f, 1.0f}},
+        {{-0.2f,  0.5f,  0.6f},    {0.0f, 0.0f, 1.0f}}
     };
 
-    // Å¥ºêÀÇ ÀÎµ¦½º µ¥ÀÌÅÍ
+    // íë¸Œì˜ ì¸ë±ìŠ¤ ë°ì´í„°
     std::vector<unsigned int> indices = {
-        // ¾Õ¸é
+        // ì•ë©´
         4, 5, 6,
         6, 7, 4,
-        // µŞ¸é
+        // ë’·ë©´
         0, 1, 2,
         2, 3, 0,
-        // ¿ŞÂÊ ¸é
+        // ì™¼ìª½ ë©´
         0, 4, 7,
         7, 3, 0,
-        // ¿À¸¥ÂÊ ¸é
+        // ì˜¤ë¥¸ìª½ ë©´
         1, 5, 6,
         6, 2, 1,
-        // ¾Æ·¡ ¸é
+        // ì•„ë˜ ë©´
         0, 1, 5,
         5, 4, 0,
-        // À§ ¸é
+        // ìœ„ ë©´
         3, 2, 6,
-        6, 7, 3
+        6, 7, 3,
+
+        // ì‘ì€ íë¸Œ ì•ë©´
+        12, 13, 14,
+        14, 15, 12,
+        // ì‘ì€ íë¸Œ ë’·ë©´
+        8, 9, 10,
+        10, 11, 8,
+        // ì‘ì€ íë¸Œ ì™¼ìª½ ë©´
+        8, 12, 15,
+        15, 11, 8,
+        // ì‘ì€ íë¸Œ ì˜¤ë¥¸ìª½ ë©´
+        9, 13, 14,
+        14, 10, 9,
+        // ì‘ì€ íë¸Œ ì•„ë˜ ë©´
+        8, 9, 13,
+        13, 12, 8,
+        // ì‘ì€ íë¸Œ ìœ„ ë©´
+        11, 10, 14,
+        14, 15, 11
     };
 
     indexCount = static_cast<int>(indices.size());
 
-    // VAO, VBO, EBO »ı¼º ¹× ¼³Á¤
+    // VAO, VBO, EBO ìƒì„± ë° ì„¤ì •
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
@@ -68,12 +95,12 @@ void Stage::Init() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
 
-    // Á¤Á¡ ¼Ó¼º ¼³Á¤
-    // À§Ä¡ (location = 0)
+    // ì •ì  ì†ì„± ì„¤ì •
+    // ìœ„ì¹˜ (location = 0)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, position)));
     glEnableVertexAttribArray(0);
 
-    // ³ë¸Ö (location = 1)
+    // ë…¸ë©€ (location = 1)
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, normal)));
     glEnableVertexAttribArray(1);
 
@@ -98,5 +125,5 @@ void Stage::Draw(Shader& shader) {
 }
 
 void Stage::Update(float deltaTime) {
-    // ÇÊ¿äÇÏ´Ù¸é ½ºÅ×ÀÌÁö ¾÷µ¥ÀÌÆ® ·ÎÁ÷ Ãß°¡
+    // í•„ìš”í•˜ë‹¤ë©´ ìŠ¤í…Œì´ì§€ ì—…ë°ì´íŠ¸ ë¡œì§ ì¶”ê°€
 }
