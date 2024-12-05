@@ -6,17 +6,25 @@
 
 
 Obstacle::Obstacle(glm::vec3 pos) {
-    Position = pos;
+    Position = pos + glm::vec3(0.0f, 0.0f, 7.0f);
     Scale = glm::vec3(1.0f);
     Rotation = glm::vec3(0.0f);
     color = glm::vec3(0.0f, 0.0f, 1.0f);
+
+    if (Position.x > 0.0f) {
+        direction = glm::vec3(-1.0f, 0.0f, 0.0f); 
+    }
+    else {
+        direction = glm::vec3(1.0f, 0.0f, 0.0f);
+    }
+
     std::cout << "obstacle construction" << std::endl;
     Init();
     UpdateModelMatrix();
 }
 
 Obstacle::~Obstacle() {
-    
+
     std::cout << "obstacle destruction" << std::endl;
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
@@ -24,14 +32,14 @@ Obstacle::~Obstacle() {
 }
 
 void Obstacle::Init() {
-   
 
 
-    const unsigned int latitudeBands = 50;   // À§µµ ºĞÇÒ ¼ö
-    const unsigned int longitudeBands = 50;  // °æµµ ºĞÇÒ ¼ö
-    const float radius = 0.5f;               // ±¸Ã¼ÀÇ ¹İÁö¸§
 
-    // Á¤Á¡ µ¥ÀÌÅÍ »ı¼º
+    const unsigned int latitudeBands = 50;   // ìœ„ë„ ë¶„í•  ìˆ˜
+    const unsigned int longitudeBands = 50;  // ê²½ë„ ë¶„í•  ìˆ˜
+    const float radius = 0.5f;               // êµ¬ì²´ì˜ ë°˜ì§€ë¦„
+
+    // ì •ì  ë°ì´í„° ìƒì„±
     for (unsigned int latNumber = 0; latNumber <= latitudeBands; latNumber++) {
         float theta = latNumber * glm::pi<float>() / latitudeBands;
         float sinTheta = sin(theta);
@@ -53,13 +61,13 @@ void Obstacle::Init() {
         }
     }
 
-    // ÀÎµ¦½º µ¥ÀÌÅÍ »ı¼º
+    // ì¸ë±ìŠ¤ ë°ì´í„° ìƒì„±
     for (unsigned int latNumber = 0; latNumber < latitudeBands; latNumber++) {
         for (unsigned int longNumber = 0; longNumber < longitudeBands; longNumber++) {
             unsigned int first = (latNumber * (longitudeBands + 1)) + longNumber;
             unsigned int second = first + longitudeBands + 1;
 
-            // µÎ °³ÀÇ »ï°¢ÇüÀ¸·Î »ç°¢ÇüÀ» ±¸¼º
+            // ë‘ ê°œì˜ ì‚¼ê°í˜•ìœ¼ë¡œ ì‚¬ê°í˜•ì„ êµ¬ì„±
             indices.push_back(first);
             indices.push_back(second);
             indices.push_back(first + 1);
@@ -70,28 +78,28 @@ void Obstacle::Init() {
         }
     }
 
-    // OpenGL ¹öÆÛ »ı¼º ¹× ¼³Á¤
+    // OpenGL ë²„í¼ ìƒì„± ë° ì„¤ì •
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAO);
 
-    // VBO¿¡ Á¤Á¡ µ¥ÀÌÅÍ Àü¼Û
+    // VBOì— ì •ì  ë°ì´í„° ì „ì†¡
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
 
-    // EBO¿¡ ÀÎµ¦½º µ¥ÀÌÅÍ Àü¼Û
+    // EBOì— ì¸ë±ìŠ¤ ë°ì´í„° ì „ì†¡
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
 
-    // Á¤Á¡ ¼Ó¼º ¼³Á¤
-    // À§Ä¡ ¼Ó¼º (location = 0)
-    
+    // ì •ì  ì†ì„± ì„¤ì •
+    // ìœ„ì¹˜ ì†ì„± (location = 0)
+
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
     glEnableVertexAttribArray(0);
-    // ³ë¸Ö ¼Ó¼º (location = 1)
-    
+    // ë…¸ë©€ ì†ì„± (location = 1)
+
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
     glEnableVertexAttribArray(1);
     glBindVertexArray(0);
@@ -110,15 +118,25 @@ void Obstacle::Draw(Shader& shader) {
     UpdateModelMatrix();
     shader.Use();
     glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, &ModelMatrix[0][0]);
-    glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), color.x,color.y,color.z); // »¡°£»ö
+    glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), color.x, color.y, color.z); // ë¹¨ê°„ìƒ‰
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
-   
+
 }
 
 void Obstacle::Update(float deltaTime) {
+    float speed = 3.5f; // ì´ë™ ì†ë„
+    float boundary = 7.0f; // ê²½ê³„ ìœ„ì¹˜
 
-    // ÀÏÁ¤ ÆĞÅÏÀ¸·Î ÁÂ¿ì·Î ¿òÁ÷ÀÌ´Â ¿¹½Ã
-    //Position.x = sin(glutGet(GLUT_ELAPSED_TIME) / 1000.0f) * 2.0f;
+    Position += direction * speed * deltaTime;
+
+    if (Position.x >= boundary) {
+        direction.x = -1.0f; 
+    }
+    else if (Position.x <= -boundary) {
+        direction.x = 1.0f; 
+    }
+
+    UpdateModelMatrix();
 }
