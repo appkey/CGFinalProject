@@ -25,6 +25,9 @@ public:
     void Render();
     void SwitchCameraMode();
     void NextStage();
+    bool CheckCollisionAABBAndSphere(const Character&, const Obstacle&);
+
+
 
     // 콜백 함수들
     static void DisplayCallback();
@@ -37,6 +40,6 @@ private:
     float deltaTime;
     float lastFrame;
     bool keys[256]; // 키 입력 상태
-};
+};  
 
 #endif

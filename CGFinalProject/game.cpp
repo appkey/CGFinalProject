@@ -3,6 +3,7 @@
 #include <GL/freeglut.h>
 #include <gl/glm/gtc/matrix_transform.hpp>
 #include <cstring> // memset을 위한 헤더
+#include <iostream>
 
 Game* Game::instance = nullptr;
 
@@ -59,8 +60,19 @@ void Game::Update(float deltaTime) {
     for (auto& obs : obstacles) {
         obs->Update(deltaTime);
     }
-    // 카메라 위치 업데이트 (예시)
-    camera->Position = character->Position + glm::vec3(0.0f, 3.0f, 7.0f);
+    
+    for (auto & obstacle : obstacles) {
+        if (CheckCollisionAABBAndSphere(*character, *obstacle)) {
+            std::cout << "Collision detected!" << std::endl;
+
+            // 충돌 처리 (예: 색상 변경)
+            character->Position = glm::vec3(0.0f, 0.0f, 13.5f);
+        }
+    }
+
+
+
+   camera->Position = character->Position + glm::vec3(0.0f, 3.0f, 7.0f);
     camera->Target = character->Position;
 }
 
@@ -128,4 +140,24 @@ void Game::KeyboardUpCallback(unsigned char key, int x, int y) {
 
 void Game::ReshapeCallback(int width, int height) {
     glViewport(0, 0, width, height);
+}
+
+bool Game::CheckCollisionAABBAndSphere(const Character& character, const Obstacle& obstacle) {
+    // 큐브(AABB)의 중심 및 반쪽 크기
+    glm::vec3 aabbMin = character.Position - character.Scale * 0.5f;
+    glm::vec3 aabbMax = character.Position + character.Scale * 0.5f;
+
+    // 구의 중심 및 반지름
+    glm::vec3 sphereCenter = obstacle.Position;
+    float sphereRadius = 0.5f; // 구의 반지름 (필요에 따라 조정)
+
+    // AABB의 각 축에서 구의 중심을 투영
+    glm::vec3 closestPoint = glm::clamp(sphereCenter, aabbMin, aabbMax);
+
+    // 투영된 점과 구의 중심 간 거리 계산
+    float distance = glm::length(closestPoint - sphereCenter);
+
+    // 충돌 여부 확인
+    return distance <= sphereRadius;
+
 }
