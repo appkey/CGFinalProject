@@ -7,6 +7,9 @@ Stage::Stage(int number) {
     stageNumber = number;
     Init();
     color = glm::vec3{0.7f, 0.7f, 0.7f};
+    stage1_start_position = glm::vec3(0.0f, -1.0f, 13.0f);
+    stage1_end_position = glm::vec3(0.0f, -1.0f, -33.0f);
+
 }
 
 Stage::~Stage() {
@@ -16,9 +19,12 @@ Stage::~Stage() {
 }
 
 void Stage::Init() {
+
+
+
     // 큐브의 정점 데이터 (8개의 정점)
     std::vector<Vertex> vertices = {
-        // 위치                       // 법선             // 색상
+        // 위치                       // 법선             
         {{-0.5f, -0.5f, -0.5f},    {0.0f, 0.0f, -1.0f}},
         {{ 0.5f, -0.5f, -0.5f},    {0.0f, 0.0f, -1.0f}},
         {{ 0.5f,  0.5f, -0.5f},    {0.0f, 0.0f, -1.0f}},
@@ -26,15 +32,7 @@ void Stage::Init() {
         {{-0.5f, -0.5f,  0.5f},    {0.0f, 0.0f, 1.0f}},
         {{ 0.5f, -0.5f,  0.5f},    {0.0f, 0.0f, 1.0f}},
         {{ 0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 1.0f}},
-        {{-0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 1.0f}},
-        {{-0.2f, -0.5f, -0.6f},    {0.0f, 0.0f, -1.0f}},
-        {{ 0.2f, -0.5f, -0.6f},    {0.0f, 0.0f, -1.0f}},
-        {{ 0.2f,  0.5f, -0.6f},    {0.0f, 0.0f, -1.0f}},
-        {{-0.2f,  0.5f, -0.6f},    {0.0f, 0.0f, -1.0f}},
-        {{-0.2f, -0.5f,  0.6f},    {0.0f, 0.0f, 1.0f}},
-        {{ 0.2f, -0.5f,  0.6f},    {0.0f, 0.0f, 1.0f}},
-        {{ 0.2f,  0.5f,  0.6f},    {0.0f, 0.0f, 1.0f}},
-        {{-0.2f,  0.5f,  0.6f},    {0.0f, 0.0f, 1.0f}}
+        {{-0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 1.0f}}
     };
 
     // 큐브의 인덱스 데이터
@@ -117,10 +115,30 @@ void Stage::Draw(Shader& shader) {
 
     shader.Use();
     glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, &model[0][0]);
-    glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), color.x, color.y, color.z); //
+    glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), color.x,color.y, color.z); 
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+
+
+    glm::mat4 start_model = glm::mat4(1.0f);
+    start_model = glm::translate(start_model, stage1_start_position);
+    start_model = glm::scale(start_model, glm::vec3(5.0f,0.5f,5.0f));
+    glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, &start_model[0][0]);
+    glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), 0.0f, 1.0f, 0.0f);
+
+    glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+
+    glm::mat4 end_model = glm::mat4(1.0f);
+    end_model = glm::translate(end_model, stage1_end_position);
+    end_model = glm::scale(end_model, glm::vec3(5.0f, 0.5f, 5.0f));
+    glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, &end_model[0][0]);
+    glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), 0.0f, 1.0f, 0.0f);
+
+    glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+
+
+
     glBindVertexArray(0);
 }
 

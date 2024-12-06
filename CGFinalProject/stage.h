@@ -22,6 +22,9 @@ public:
 
 private:
     glm::vec3 color;
+    glm::vec3 stage1_start_position;
+    glm::vec3 stage1_end_position;
+
 };
 
 #endif
