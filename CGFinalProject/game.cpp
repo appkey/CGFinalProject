@@ -2,7 +2,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <gl/glm/gtc/matrix_transform.hpp>
-#include <cstring> // memsetÀ» À§ÇÑ Çì´õ
+#include <cstring> // memsetì„ ìœ„í•œ í—¤ë”
 #include <iostream>
 
 Game* Game::instance = nullptr;
@@ -11,7 +11,7 @@ Game::Game() {
     currentStage = 1;
     stage = nullptr;
     character = new Character();
-    
+
     camera = new Camera();
     shader = new Shader("vertex_shader.glsl", "fragment_shader.glsl");
     deltaTime = 0.0f;
@@ -30,21 +30,21 @@ Game::~Game() {
 void Game::Init() {
     stage = new Stage(currentStage);
     for (int i = 0; i < 10; ++i) {
-        obstacles.push_back(new Obstacle(glm::vec3(-4.0f, 0.5f, -4.f * i )));
+        obstacles.push_back(new Obstacle(glm::vec3(-4.0f, 0.5f, -4.f * i)));
     }
     for (int i = 0; i < 10; ++i) {
-        obstacles.push_back(new Obstacle(glm::vec3(+4.0f, 0.5f,-4.f * i+1.f)));
+        obstacles.push_back(new Obstacle(glm::vec3(+4.0f, 0.5f, -4.f * i + 1.f)));
     }
 
 }
 
 void Game::Run() {
- 
+
     glEnable(GL_DEPTH_TEST);
 
     Init();
 
-    // Äİ¹é ÇÔ¼ö ¼³Á¤
+    // ì½œë°± í•¨ìˆ˜ ì„¤ì •
     glutDisplayFunc(DisplayCallback);
     glutIdleFunc(DisplayCallback);
     glutKeyboardFunc(KeyboardDownCallback);
@@ -55,24 +55,33 @@ void Game::Run() {
 }
 
 void Game::Update(float deltaTime) {
-    character->Move(deltaTime, keys);
-    stage->Update(deltaTime);
-    for (auto& obs : obstacles) {
-        obs->Update(deltaTime);
-    }
-    
-    for (auto & obstacle : obstacles) {
-        if (CheckCollisionAABBAndSphere(*character, *obstacle)) {
-            std::cout << "Collision detected!" << std::endl;
+    glm::vec3 minBoundary(-7.0f, -1.0f, -29.0f);
+    glm::vec3 maxBoundary(7.0f, 1.0f, 10.0f);   
 
-            // Ãæµ¹ Ã³¸® (¿¹: »ö»ó º¯°æ)
-            character->Position = glm::vec3(0.0f, 0.0f, 13.5f);
+    glm::vec3 startMin(-2.0f, -1.0f, 10.0f);
+    glm::vec3 startMax(2.0f, 1.0f, 15.0f);  
+
+    glm::vec3 endMin(-2.0f, -1.0f, -34.0f); 
+    glm::vec3 endMax(2.0f, 1.0f, -29.0f);  
+
+    character->Move(deltaTime, keys, minBoundary, maxBoundary, startMin, startMax, endMin, endMax);
+    stage->Update(deltaTime);
+    for (auto& obstacle : obstacles) {
+        obstacle->Update(deltaTime);
+
+        if (CheckCollisionAABBAndSphere(*character, *obstacle)) {
+            if (!character->isInvincible) {
+                std::cout << "Collision detected! Character is not invincible." << std::endl;
+                // ìºë¦­í„°ê°€ ì¶©ëŒí–ˆì„ ë•Œ ì´ˆê¸° ìœ„ì¹˜ë¡œ ì´ë™
+                character->Position = glm::vec3(0.0f, 0.0f, 13.5f);
+            }
+            else {
+                std::cout << "Collision detected, but character is invincible." << std::endl;
+            }
         }
     }
 
-
-
-   camera->Position = character->Position + glm::vec3(0.0f, 3.0f, 7.0f);
+    camera->Position = character->Position + glm::vec3(0.0f, 3.0f, 7.0f);
     camera->Target = character->Position;
 }
 
@@ -81,14 +90,14 @@ void Game::Render() {
     glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
     shader->Use();
 
-    // ºä ¹× ÇÁ·ÎÁ§¼Ç Çà·Ä ¼³Á¤
+    // ë·° ë° í”„ë¡œì ì…˜ í–‰ë ¬ ì„¤ì •
     glm::mat4 view = camera->GetViewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1600.0f / 900.0f, 0.1f, 100.0f);
 
     glUniformMatrix4fv(glGetUniformLocation(shader->Program, "view"), 1, GL_FALSE, &view[0][0]);
     glUniformMatrix4fv(glGetUniformLocation(shader->Program, "projection"), 1, GL_FALSE, &projection[0][0]);
 
-    // Á¶¸í ¼³Á¤
+    // ì¡°ëª… ì„¤ì •
     glm::vec3 lightPos = glm::vec3(0.0f, 3.0f, -5.0f);
     glUniform3fv(glGetUniformLocation(shader->Program, "lightPos"), 1, &lightPos[0]);
     glUniform3fv(glGetUniformLocation(shader->Program, "viewPos"), 1, &camera->Position[0]);
@@ -123,13 +132,17 @@ void Game::DisplayCallback() {
 
 void Game::KeyboardDownCallback(unsigned char key, int x, int y) {
     instance->keys[key] = true;
-    if (key == 'c') {
+
+    if (key == 'i') {
+        instance->character->ToggleInvincibility();
+    }
+    else if (key == 'c') {
         instance->SwitchCameraMode();
     }
     else if (key == 'n') {
         instance->NextStage();
     }
-    else if (key == 27) { // ESC Å°
+    else if (key == 27) { // ESC í‚¤
         exit(0);
     }
 }
@@ -143,21 +156,21 @@ void Game::ReshapeCallback(int width, int height) {
 }
 
 bool Game::CheckCollisionAABBAndSphere(const Character& character, const Obstacle& obstacle) {
-    // Å¥ºê(AABB)ÀÇ Áß½É ¹× ¹İÂÊ Å©±â
+    // íë¸Œ(AABB)ì˜ ì¤‘ì‹¬ ë° ë°˜ìª½ í¬ê¸°
     glm::vec3 aabbMin = character.Position - character.Scale * 0.5f;
     glm::vec3 aabbMax = character.Position + character.Scale * 0.5f;
 
-    // ±¸ÀÇ Áß½É ¹× ¹İÁö¸§
+    // êµ¬ì˜ ì¤‘ì‹¬ ë° ë°˜ì§€ë¦„
     glm::vec3 sphereCenter = obstacle.Position;
-    float sphereRadius = 0.5f; // ±¸ÀÇ ¹İÁö¸§ (ÇÊ¿ä¿¡ µû¶ó Á¶Á¤)
+    float sphereRadius = 0.5f; // êµ¬ì˜ ë°˜ì§€ë¦„ (í•„ìš”ì— ë”°ë¼ ì¡°ì •)
 
-    // AABBÀÇ °¢ Ãà¿¡¼­ ±¸ÀÇ Áß½ÉÀ» Åõ¿µ
+    // AABBì˜ ê° ì¶•ì—ì„œ êµ¬ì˜ ì¤‘ì‹¬ì„ íˆ¬ì˜
     glm::vec3 closestPoint = glm::clamp(sphereCenter, aabbMin, aabbMax);
 
-    // Åõ¿µµÈ Á¡°ú ±¸ÀÇ Áß½É °£ °Å¸® °è»ê
+    // íˆ¬ì˜ëœ ì ê³¼ êµ¬ì˜ ì¤‘ì‹¬ ê°„ ê±°ë¦¬ ê³„ì‚°
     float distance = glm::length(closestPoint - sphereCenter);
 
-    // Ãæµ¹ ¿©ºÎ È®ÀÎ
+    // ì¶©ëŒ ì—¬ë¶€ í™•ì¸
     return distance <= sphereRadius;
 
 }
