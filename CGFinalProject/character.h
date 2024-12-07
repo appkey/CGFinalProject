@@ -15,6 +15,8 @@ public:
     glm::vec3 Rotation; // Rotation angles in degrees
     glm::mat4 ModelMatrix;
 
+    bool isInvincible;
+
     GLuint VAO, VBO, EBO;
     int indexCount;
     glm::vec3 color;
@@ -24,8 +26,10 @@ public:
     void Init();
     void UpdateModelMatrix();
     void Draw(Shader& shader);
-    void Move(float deltaTime, bool* keys);
-
+    void Move(float deltaTime, bool* keys, const glm::vec3& minBoundary, const glm::vec3& maxBoundary,
+        const glm::vec3& startMin, const glm::vec3& startMax,
+        const glm::vec3& endMin, const glm::vec3& endMax);
+    void ToggleInvincibility();
 
 };
 
