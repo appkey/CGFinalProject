@@ -2,7 +2,7 @@
 #include <gl/glm/gtc/matrix_transform.hpp>
 #include <iostream>
 
-Character::Character() {
+Character::Character() : isInvincible(false) {
     Position = glm::vec3(0.0f, 0.0f, 13.5f);
     Scale = glm::vec3(1.0f);
     Rotation = glm::vec3(0.0f);
@@ -81,6 +81,16 @@ void Character::Init() {
     glBindVertexArray(0);
 }
 
+void Character::ToggleInvincibility() {
+    isInvincible = !isInvincible;
+    if (isInvincible) {
+        std::cout << "Character is now invincible!" << std::endl;
+    }
+    else {
+        std::cout << "Character is no longer invincible!" << std::endl;
+    }
+}
+
 void Character::UpdateModelMatrix() {
     ModelMatrix = glm::mat4(1.0f);
     ModelMatrix = glm::translate(ModelMatrix, Position);
@@ -100,18 +110,37 @@ void Character::Draw(Shader& shader) {
     glBindVertexArray(0);
 }
 
-void Character::Move(float deltaTime, bool* keys) {
+void Character::Move(float deltaTime, bool* keys, const glm::vec3& minBoundary, const glm::vec3& maxBoundary, const glm::vec3& startMin, const glm::vec3& startMax, const glm::vec3& endMin, const glm::vec3& endMax) {
     float speed = 5.0f;
+    glm::vec3 newPosition = Position;
+
     if (keys['w']) {
-        Position.z -= speed * deltaTime;
+        newPosition.z -= speed * deltaTime;
     }
     if (keys['s']) {
-        Position.z += speed * deltaTime;
+        newPosition.z += speed * deltaTime;
     }
     if (keys['a']) {
-        Position.x -= speed * deltaTime;
+        newPosition.x -= speed * deltaTime;
     }
     if (keys['d']) {
-        Position.x += speed * deltaTime;
+        newPosition.x += speed * deltaTime;
+    }
+
+    // 경계 체크
+    bool insideMainBoundary =
+        newPosition.x >= minBoundary.x && newPosition.x <= maxBoundary.x &&
+        newPosition.z >= minBoundary.z && newPosition.z <= maxBoundary.z;
+
+    bool insideStartBoundary =
+        newPosition.x >= startMin.x && newPosition.x <= startMax.x &&
+        newPosition.z >= startMin.z && newPosition.z <= startMax.z;
+
+    bool insideEndBoundary =
+        newPosition.x >= endMin.x && newPosition.x <= endMax.x &&
+        newPosition.z >= endMin.z && newPosition.z <= endMax.z;
+
+    if (insideMainBoundary || insideStartBoundary || insideEndBoundary) {
+        Position = newPosition;
     }
 }
