@@ -6,8 +6,6 @@
 #include "shader.h"
 #include "model_loader.h"
 
-
-
 class Character {
 public:
     glm::vec3 Position;
