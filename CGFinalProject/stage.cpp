@@ -10,6 +10,19 @@ Stage::Stage(int number) {
     stage1_start_position = glm::vec3(0.0f, -1.0f, 13.0f);
     stage1_end_position = glm::vec3(0.0f, -1.0f, -33.0f);
 
+    if (stageNumber == 2) {
+        tileMap = {
+    {4, 4, 4, 4, 3, 2, 3, 2, 3, 2, 3,2, 3, 2, 3, 2},
+    {4, 4, 4, 4, 2, 3, 2, 3, 2, 3, 2,3, 4, 4, 2, 3},
+    {4, 4, 4, 4, 3, 2, 3, 2, 3, 2, 3,2, 4, 4, 1, 1},
+    {4, 4, 4, 4, 2, 3, 2, 3, 2, 3, 2,3, 4, 4, 1, 1},
+    {1, 1, 4, 4, 3, 2, 3, 2, 3, 2, 3,2, 4, 4, 4, 4},
+    {1, 1, 4, 4, 2, 3, 2, 3, 2, 3, 2,3, 4, 4, 4, 4},
+    {3, 2, 4, 4, 3, 2, 3, 2, 3, 2, 3,2, 4, 4, 4, 4},
+    {2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2,3, 4, 4, 4, 4}
+        };
+    }
+
 }
 
 Stage::~Stage() {
@@ -19,8 +32,6 @@ Stage::~Stage() {
 }
 
 void Stage::Init() {
-
-
 
     // 큐브의 정점 데이터 (8개의 정점)
     std::vector<Vertex> vertices = {
@@ -107,39 +118,92 @@ void Stage::Init() {
 }
 
 void Stage::Draw(Shader& shader) {
-    glm::mat4 model = glm::mat4(1.0f);
+   
+}
 
-    model = glm::translate(model, glm::vec3(0.0f, -1.f, -10.0f)); 
-    model = glm::scale(model, glm::vec3(15.0f, 0.5f, 40.0f)); 
+void Stage::Draw(Shader& shader, int stageNumber) {
+    if (stageNumber == 1) {
+        glm::mat4 model = glm::mat4(1.0f);
 
-
-    shader.Use();
-    glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, &model[0][0]);
-    glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), color.x,color.y, color.z); 
-
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+        model = glm::translate(model, glm::vec3(0.0f, -1.f, -10.0f));
+        model = glm::scale(model, glm::vec3(15.0f, 0.5f, 40.0f));
 
 
-    glm::mat4 start_model = glm::mat4(1.0f);
-    start_model = glm::translate(start_model, stage1_start_position);
-    start_model = glm::scale(start_model, glm::vec3(5.0f,0.5f,5.0f));
-    glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, &start_model[0][0]);
-    glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), 0.0f, 1.0f, 0.0f);
+        shader.Use();
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, &model[0][0]);
+        glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), color.x, color.y, color.z);
 
-    glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
-
-    glm::mat4 end_model = glm::mat4(1.0f);
-    end_model = glm::translate(end_model, stage1_end_position);
-    end_model = glm::scale(end_model, glm::vec3(5.0f, 0.5f, 5.0f));
-    glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, &end_model[0][0]);
-    glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), 0.0f, 1.0f, 0.0f);
-
-    glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
 
 
+        glm::mat4 start_model = glm::mat4(1.0f);
+        start_model = glm::translate(start_model, stage1_start_position);
+        start_model = glm::scale(start_model, glm::vec3(5.0f, 0.5f, 5.0f));
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, &start_model[0][0]);
+        glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), 0.0f, 1.0f, 0.0f);
 
-    glBindVertexArray(0);
+        glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+
+        glm::mat4 end_model = glm::mat4(1.0f);
+        end_model = glm::translate(end_model, stage1_end_position);
+        end_model = glm::scale(end_model, glm::vec3(5.0f, 0.5f, 5.0f));
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, &end_model[0][0]);
+        glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), 0.0f, 1.0f, 0.0f);
+
+        glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+
+
+
+        glBindVertexArray(0);
+    }
+    else if (stageNumber == 2) {
+        glm::mat4 model;
+        float tileSize = 2.0f; // 타일 한 변의 크기
+        glm::vec3 greenTileColor = glm::vec3(0.0f, 1.0f, 0.0f); // 초록색
+        glm::vec3 lightTileColor = glm::vec3(0.8f, 0.8f, 0.8f); // 밝은 회색
+        glm::vec3 darkTileColor = glm::vec3(0.4f, 0.4f, 0.4f);  // 어두운 회색
+
+        int mapHeight = tileMap.size();     // 세로 타일 개수
+        int mapWidth = tileMap[0].size();  // 가로 타일 개수
+
+        shader.Use();
+
+        for (int z = 0; z < mapHeight; ++z) {
+            for (int x = 0; x < mapWidth; ++x) {
+                int tileType = tileMap[z][x];
+
+                // 렌더링하지 않는 타일은 건너뛰기
+                if (tileType == 4) {
+                    continue;
+                }
+
+                model = glm::mat4(1.0f);
+                model = glm::translate(model, glm::vec3(x * tileSize - (mapWidth / 2) * tileSize, -1.0f, z * tileSize - (mapHeight / 2) * tileSize));
+                model = glm::scale(model, glm::vec3(tileSize, 0.1f, tileSize));
+
+                // 타일 색상 설정
+                glm::vec3 currentColor;
+                if (tileType == 1) {
+                    currentColor = greenTileColor;
+                }
+                else if (tileType == 2) {
+                    currentColor = lightTileColor;
+                }
+                else if (tileType == 3) {
+                    currentColor = darkTileColor;
+                }
+
+                glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, &model[0][0]);
+                glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), currentColor.x, currentColor.y, currentColor.z);
+
+                glBindVertexArray(VAO);
+                glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+            }
+        }
+
+        glBindVertexArray(0);
+    }
 }
 
 void Stage::Update(float deltaTime) {

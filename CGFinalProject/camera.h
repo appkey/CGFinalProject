@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 #include <gl/glm/glm.hpp>
 #include <gl/glm/gtc/matrix_transform.hpp>
+#include "character.h"
 
 enum CameraMode {
     FIRST_PERSON,
@@ -22,6 +23,7 @@ public:
     Camera();
     glm::mat4 GetViewMatrix();
     void SwitchMode();
+    void update(Character& character);
 };
 
 #endif

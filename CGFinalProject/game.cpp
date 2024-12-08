@@ -28,14 +28,29 @@ Game::~Game() {
 }
 
 void Game::Init() {
-    stage = new Stage(currentStage);
-    for (int i = 0; i < 10; ++i) {
-        obstacles.push_back(new Obstacle(glm::vec3(-4.0f, 0.5f, -4.f * i)));
-    }
-    for (int i = 0; i < 10; ++i) {
-        obstacles.push_back(new Obstacle(glm::vec3(+4.0f, 0.5f, -4.f * i + 1.f)));
-    }
+    if (stage != nullptr) delete stage;
+    if (character != nullptr) delete character;
 
+    stage = new Stage(currentStage);
+    character = new Character();
+
+    obstacles.clear();
+
+    if (currentStage == 1) {
+        // 스테이지 1의 장애물 설정
+        for (int i = 0; i < 10; ++i) {
+            obstacles.push_back(new Obstacle(glm::vec3(-4.0f, 0.5f, -4.f * i)));
+        }
+        for (int i = 0; i < 10; ++i) {
+            obstacles.push_back(new Obstacle(glm::vec3(+4.0f, 0.5f, -4.f * i + 1.f)));
+        }
+    }
+    else if (currentStage == 2) {
+        // 스테이지 2의 초기화 로직 추가
+        for (int i = 0; i < 5; ++i) {
+            obstacles.push_back(new Obstacle(glm::vec3(-2.0f * i, 0.5f, -2.f * i)));
+        }
+    }
 }
 
 void Game::Run() {
@@ -80,16 +95,16 @@ void Game::Update(float deltaTime) {
             }
         }
     }
-
-    camera->Position = character->Position + glm::vec3(0.0f, 3.0f, 7.0f);
-    camera->Target = character->Position;
+    camera->update(*character);
+    
 }
 
 void Game::Render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
-    shader->Use();
 
+    glViewport(0, 0, 1600, 900);
+    shader->Use();
     // 뷰 및 프로젝션 행렬 설정
     glm::mat4 view = camera->GetViewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1600.0f / 900.0f, 0.1f, 100.0f);
@@ -102,7 +117,28 @@ void Game::Render() {
     glUniform3fv(glGetUniformLocation(shader->Program, "lightPos"), 1, &lightPos[0]);
     glUniform3fv(glGetUniformLocation(shader->Program, "viewPos"), 1, &camera->Position[0]);
 
-    stage->Draw(*shader);
+    stage->Draw(*shader,currentStage);
+    character->Draw(*shader);
+    for (auto& obs : obstacles) {
+        obs->Draw(*shader);
+    }
+    glViewport(1200, 700, 400, 200);
+    shader->Use();
+
+    // 원근 투영 행렬 설정
+    shader->Use();
+
+    // 직교 투영 행렬 설정
+    float orthoWidth = 30.0f; // 맵 가로 크기
+    float orthoHeight = 20.0f; // 맵 세로 크기
+    view = glm::lookAt(glm::vec3(character->getPosition().x, 30.0f, character->getPosition().z), glm::vec3(glm::vec3(character->getPosition().x, 0, character->getPosition().z)), glm::vec3(0.0f, 0.0f, -1.0f));
+   projection = glm::ortho(-orthoWidth / 2.0f, orthoWidth / 2.0f, -orthoHeight / 2.0f, orthoHeight / 2.0f, 0.1f, 100.0f);
+
+    glUniformMatrix4fv(glGetUniformLocation(shader->Program, "view"), 1, GL_FALSE, &view[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(shader->Program, "projection"), 1, GL_FALSE, &projection[0][0]);
+
+    // 미니맵 렌더링
+    stage->Draw(*shader, currentStage);
     character->Draw(*shader);
     for (auto& obs : obstacles) {
         obs->Draw(*shader);
@@ -115,11 +151,11 @@ void Game::SwitchCameraMode() {
     camera->SwitchMode();
 }
 
-void Game::NextStage() {
-    currentStage++;
-    delete stage;
-    stage = new Stage(currentStage);
+void Game::MoveStage(int stageNum) {
+    currentStage = stageNum;
+    Init(); // 삭제와 초기화를 Init()에서 처리
 }
+
 
 void Game::DisplayCallback() {
     float currentFrame = glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
@@ -139,8 +175,8 @@ void Game::KeyboardDownCallback(unsigned char key, int x, int y) {
     else if (key == 'c') {
         instance->SwitchCameraMode();
     }
-    else if (key == 'n') {
-        instance->NextStage();
+    else if (key == '2') {
+        instance->MoveStage(2);
     }
     else if (key == 27) { // ESC 키
         exit(0);

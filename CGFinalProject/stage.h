@@ -18,13 +18,14 @@ public:
     ~Stage();
     void Init();
     void Draw(Shader& shader);
+    void Draw(Shader&, int);
     void Update(float deltaTime);
 
 private:
     glm::vec3 color;
     glm::vec3 stage1_start_position;
     glm::vec3 stage1_end_position;
-
+    std::vector < std::vector<int>> tileMap;
 };
 
 #endif

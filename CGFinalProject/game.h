@@ -24,7 +24,7 @@ public:
     void Update(float deltaTime);
     void Render();
     void SwitchCameraMode();
-    void NextStage();
+    void MoveStage(int);
     bool CheckCollisionAABBAndSphere(const Character&, const Obstacle&);
 
 

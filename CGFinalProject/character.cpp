@@ -3,7 +3,7 @@
 #include <iostream>
 
 Character::Character() : isInvincible(false) {
-    Position = glm::vec3(0.0f, 0.0f, 13.5f);
+    Position = glm::vec3(0.0f, -0.25f, 13.5f);
     Scale = glm::vec3(1.0f);
     Rotation = glm::vec3(0.0f);
     color = glm::vec3(1.0f, 0.0f, 0.0f);
@@ -140,7 +140,7 @@ void Character::Move(float deltaTime, bool* keys, const glm::vec3& minBoundary, 
         newPosition.x >= endMin.x && newPosition.x <= endMax.x &&
         newPosition.z >= endMin.z && newPosition.z <= endMax.z;
 
-    if (insideMainBoundary || insideStartBoundary || insideEndBoundary) {
+   // if (insideMainBoundary || insideStartBoundary || insideEndBoundary) {
         Position = newPosition;
-    }
+   // }
 }
