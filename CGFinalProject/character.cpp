@@ -4,7 +4,7 @@
 
 Character::Character() : isInvincible(false) {
     Position = glm::vec3(0.0f, -0.25f, 13.5f);
-    Scale = glm::vec3(1.0f);
+    Scale = glm::vec3(1.0f,1.1f,1.0f);
     Rotation = glm::vec3(0.0f);
     color = glm::vec3(1.0f, 0.0f, 0.0f);
     Init();
@@ -88,6 +88,23 @@ void Character::ToggleInvincibility() {
     }
     else {
         std::cout << "Character is no longer invincible!" << std::endl;
+    }
+}
+
+void Character::setPosition(const glm::vec3& pos)
+{
+    Position = pos;
+
+}
+
+void Character::startPos(const int currentStage)
+{
+    if (currentStage == 1) {
+        Position = glm::vec3(0.0f, -0.25f, 13.5f);
+    } else if (currentStage == 2) {
+            Position = glm::vec3(-15.f, -0.25f, 1.f);
+    } else if (currentStage == 3) {
+        ;
     }
 }
 

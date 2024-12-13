@@ -39,16 +39,17 @@ void Game::Init() {
     if (currentStage == 1) {
         // 스테이지 1의 장애물 설정
         for (int i = 0; i < 10; ++i) {
-            obstacles.push_back(new Obstacle(glm::vec3(-4.0f, 0.5f, -4.f * i)));
+            obstacles.push_back(new Obstacle(glm::vec3(-4.0f, 0.0f, -4.f * i)));
         }
         for (int i = 0; i < 10; ++i) {
-            obstacles.push_back(new Obstacle(glm::vec3(+4.0f, 0.5f, -4.f * i + 1.f)));
+            obstacles.push_back(new Obstacle(glm::vec3(+4.0f, 0.0f, -4.f * i + 1.f)));
         }
     }
     else if (currentStage == 2) {
+        character->startPos(2);
         // 스테이지 2의 초기화 로직 추가
         for (int i = 0; i < 5; ++i) {
-            obstacles.push_back(new Obstacle(glm::vec3(-2.0f * i, 0.5f, -2.f * i)));
+            obstacles.push_back(new Obstacle(glm::vec3(-2.0f * i, 0.0f, -2.f * i)));
         }
     }
 }
@@ -88,7 +89,7 @@ void Game::Update(float deltaTime) {
             if (!character->isInvincible) {
                 std::cout << "Collision detected! Character is not invincible." << std::endl;
                 // 캐릭터가 충돌했을 때 초기 위치로 이동
-                character->Position = glm::vec3(0.0f, 0.0f, 13.5f);
+                character->startPos(currentStage);
             }
             else {
                 std::cout << "Collision detected, but character is invincible." << std::endl;
@@ -143,6 +144,21 @@ void Game::Render() {
     for (auto& obs : obstacles) {
         obs->Draw(*shader);
     }
+
+    glViewport(1200, 450, 400, 200); // 미니맵 아래 영역
+    view = glm::lookAt(glm::vec3(0.0f, 0.0f, 30.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    projection = glm::ortho(-15.0f, 15.0f, -10.0f, 10.0f, 0.1f, 100.0f);
+
+    glUniformMatrix4fv(glGetUniformLocation(shader->Program, "view"), 1, GL_FALSE, &view[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(shader->Program, "projection"), 1, GL_FALSE, &projection[0][0]);
+
+    // 평면도 그리기
+    stage->Draw(*shader, currentStage);
+    character->Draw(*shader);
+    for (auto& obs : obstacles) {
+        obs->Draw(*shader);
+    }
+
 
     glutSwapBuffers();
 }

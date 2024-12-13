@@ -29,6 +29,10 @@ public:
         const glm::vec3& endMin, const glm::vec3& endMax);
     void ToggleInvincibility();
     glm::vec3 getPosition() const { return Position; }
+    void setPosition(const glm::vec3& pos);
+    void startPos(const int currentStage);
+
+
 };
 
 #endif
