@@ -25,7 +25,7 @@ Obstacle::Obstacle(glm::vec3 pos, int update_mode_) {
     color = glm::vec3(0.0f, 0.0f, 1.0f);
     update_mode = update_mode_;
     direction = Position.x > 0.0f ? glm::vec3(-1.0f, 0.0f, 0.0f) : glm::vec3(1.0f, 0.0f, 0.0f);
-
+    StartPostion = Position;
     std::cout << "obstacle construction" << std::endl;
     Init();
     UpdateModelMatrix();
@@ -164,7 +164,37 @@ void Obstacle::Update(float deltaTime, int currentStage) {
         }
     }
     else if (update_mode == 1) {
+        float xLength = 4.0f; // x축 이동 범위
+        float zLength = 8.0f; // z축 이동 범위
 
+       
+        float speed = 3.5f;
+
+       
+        if (state == 0) { 
+            Position.x -= speed * deltaTime;
+            if (Position.x <= StartPostion.x - xLength) {
+                state = 1; 
+            }
+        }
+        else if (state == 1) {
+            Position.z += speed * deltaTime;
+            if (Position.z >= StartPostion.z + zLength) {
+                state = 2; 
+            }
+        }
+        else if (state == 2) {
+            Position.x += speed * deltaTime;
+            if (Position.x >= StartPostion.x) {
+                state = 3; 
+            }
+        }
+        else if (state == 3) { 
+            Position.z -= speed * deltaTime;
+            if (Position.z <= StartPostion.z) {
+                state = 0; 
+            }
+        }
     }
     else if (update_mode == 2) {
         float angle = glm::radians(rotationSpeed * deltaTime);

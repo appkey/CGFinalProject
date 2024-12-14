@@ -23,6 +23,7 @@ public:
     glm::vec3 color;
     glm::vec3 direction;
     
+    glm::vec3 StartPostion;
     int update_mode;
 
     GLuint VAO, VBO, EBO, NBO;
