@@ -48,10 +48,23 @@ void Game::Init() {
     else if (currentStage == 2) {
         character->startPos(2);
         // 스테이지 2의 초기화 로직 추가
-        for (int i = 0; i < 5; ++i) {
-            obstacles.push_back(new Obstacle(glm::vec3(-2.0f * i, 0.0f, -2.f * i)));
+
+        // 중앙 장애물
+        obstacles.push_back(new Obstacle(glm::vec3(-1.0f, 0.0f, -8.0f)));
+
+        // 세로 방향 장애물
+        for (int i = 1; i <= 4; ++i) {
+            obstacles.push_back(new Obstacle(glm::vec3(-1.0f, 0.0f, -8.0f -2.0f * i)));  // 위쪽
+            obstacles.push_back(new Obstacle(glm::vec3(-1.0f, 0.0f, - 8.0f + 2.0f * i)));   // 아래쪽
+        }
+
+        // 가로 방향 장애물
+        for (int i = 1; i <= 4; ++i) {
+            obstacles.push_back(new Obstacle(glm::vec3(-1.0f -2.0f * i, 0.0f, -8.0f)));  // 왼쪽
+            obstacles.push_back(new Obstacle(glm::vec3(-1.0f + 2.0f * i, 0.0f, -8.0f)));   // 오른쪽
         }
     }
+
 }
 
 void Game::Run() {
@@ -72,18 +85,18 @@ void Game::Run() {
 
 void Game::Update(float deltaTime) {
     glm::vec3 minBoundary(-7.0f, -1.0f, -29.0f);
-    glm::vec3 maxBoundary(7.0f, 1.0f, 10.0f);   
+    glm::vec3 maxBoundary(7.0f, 1.0f, 10.0f);
 
     glm::vec3 startMin(-2.0f, -1.0f, 10.0f);
-    glm::vec3 startMax(2.0f, 1.0f, 15.0f);  
+    glm::vec3 startMax(2.0f, 1.0f, 15.0f);
 
-    glm::vec3 endMin(-2.0f, -1.0f, -34.0f); 
-    glm::vec3 endMax(2.0f, 1.0f, -29.0f);  
+    glm::vec3 endMin(-2.0f, -1.0f, -34.0f);
+    glm::vec3 endMax(2.0f, 1.0f, -29.0f);
 
     character->Move(deltaTime, keys, minBoundary, maxBoundary, startMin, startMax, endMin, endMax);
     stage->Update(deltaTime);
     for (auto& obstacle : obstacles) {
-        obstacle->Update(deltaTime);
+        obstacle->Update(deltaTime, currentStage);
 
         if (CheckCollisionAABBAndSphere(*character, *obstacle)) {
             if (!character->isInvincible) {
@@ -97,7 +110,7 @@ void Game::Update(float deltaTime) {
         }
     }
     camera->update(*character);
-    
+
 }
 
 void Game::Render() {
@@ -118,7 +131,7 @@ void Game::Render() {
     glUniform3fv(glGetUniformLocation(shader->Program, "lightPos"), 1, &lightPos[0]);
     glUniform3fv(glGetUniformLocation(shader->Program, "viewPos"), 1, &camera->Position[0]);
 
-    stage->Draw(*shader,currentStage);
+    stage->Draw(*shader, currentStage);
     character->Draw(*shader);
     for (auto& obs : obstacles) {
         obs->Draw(*shader);
@@ -133,7 +146,7 @@ void Game::Render() {
     float orthoWidth = 30.0f; // 맵 가로 크기
     float orthoHeight = 20.0f; // 맵 세로 크기
     view = glm::lookAt(glm::vec3(character->getPosition().x, 30.0f, character->getPosition().z), glm::vec3(glm::vec3(character->getPosition().x, 0, character->getPosition().z)), glm::vec3(0.0f, 0.0f, -1.0f));
-   projection = glm::ortho(-orthoWidth / 2.0f, orthoWidth / 2.0f, -orthoHeight / 2.0f, orthoHeight / 2.0f, 0.1f, 100.0f);
+    projection = glm::ortho(-orthoWidth / 2.0f, orthoWidth / 2.0f, -orthoHeight / 2.0f, orthoHeight / 2.0f, 0.1f, 100.0f);
 
     glUniformMatrix4fv(glGetUniformLocation(shader->Program, "view"), 1, GL_FALSE, &view[0][0]);
     glUniformMatrix4fv(glGetUniformLocation(shader->Program, "projection"), 1, GL_FALSE, &projection[0][0]);
