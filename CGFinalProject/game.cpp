@@ -19,8 +19,6 @@ Game::Game() {
     showNormals = false;
     deltaTime = 0.0f;
     lastFrame = 0.0f;
-    mouseOffsetX = 0.0f;
-    mouseOffsetY = 0.0f;
     memset(keys, 0, sizeof(keys));
     instance = this;
     wireframe = false;
@@ -51,9 +49,6 @@ void Game::Init() {
     if (skybox != nullptr) delete skybox;
     stage = new Stage(currentStage);
     character = new Character();
-
-
-
 
     coins.clear();
     obstacles.clear();
@@ -186,27 +181,56 @@ void Game::Init() {
 
                 }
             }
-        }
+        //첫 번째 줄
         for (int i = 0; i <= 10; ++i) {
-            if (i == 0 || i == 1 || i == 2 || i == 4 || i == 5 || i == 6 || i == 8 || i == 9 || i == 10) {
-                glm::vec3 pos = glm::vec3(-21.0f, 0.0f, i * tileSize - 20.0f);
-                Obstacle* movingCube = new Obstacle(pos);
-                obstacles.push_back(movingCube);
+                if (i == 0 || i == 1 || i == 2 || i == 4 || i == 5 || i == 6 || i == 8 || i == 9 || i == 10) {
+                    glm::vec3 pos = glm::vec3(-21.0f, 0.0f, i * tileSize - 20.0f);
+                    Obstacle* movingCube = new Obstacle(pos, -1);
+                    obstacles.push_back(movingCube);
+                }
             }
         }
-
         for (int i = 0; i <= 10; ++i) {
             if (i == 0 || i == 4 || i == 8) {
                 glm::vec3 pos = glm::vec3(-19.0f, 0.0f, i * tileSize - 22.0f);
-                Obstacle* movingCube = new Obstacle(pos);
+                Obstacle* movingCube = new Obstacle(pos,1);
                 obstacles.push_back(movingCube);
             }
         }
-
+        //두 번째 줄
+        for (int i = 0; i <= 16; ++i) {
+            if (i == 0 || i == 2 || i == 4 || i == 6 || i == 8 || i == 10 || i == 12 || i == 14 || i == 16) {
+                glm::vec3 pos = glm::vec3(-11.0f, 0.0f, i * tileSize - 22.0f);
+                Obstacle* movingCube = new Obstacle(pos, 2);
+                obstacles.push_back(movingCube);
+            }
+        }
+        //세 번째 줄
+        for (int i = 0; i <= 15; ++i) {
+            if (i == 0 || i == 3 || i == 6 || i == 9 || i == 12) {
+                glm::vec3 pos = glm::vec3(-4.0f, 0.0f, i * tileSize - 21.0f);
+                Obstacle* movingCube = new Obstacle(pos, 3);
+                obstacles.push_back(movingCube);
+            }
+        }
+        for (int i = 0; i <= 15; ++i) {
+            if (i == 0 || i == 3 || i == 6 || i == 9 || i == 12) {
+                glm::vec3 pos = glm::vec3(-2.0f, 0.0f, i * tileSize - 21.0f);
+                Obstacle* movingCube = new Obstacle(pos, 3);
+                obstacles.push_back(movingCube);
+            }
+        }
         for (int i = 0; i <= 15; ++i) {
             if (i == 0 || i == 3 || i == 6 || i == 9 || i == 12 || i == 15) {
-                glm::vec3 pos = glm::vec3(-11.0f, 0.0f, i * tileSize - 22.0f);
-                Obstacle* movingCube = new Obstacle(pos);
+                glm::vec3 pos = glm::vec3(0.0f, 0.0f, i * tileSize - 24.0f);
+                Obstacle* movingCube = new Obstacle(pos, 4);
+                obstacles.push_back(movingCube);
+            }
+        }
+        for (int i = 0; i <= 15; ++i) {
+            if (i == 0 || i == 3 || i == 6 || i == 9 || i == 12 || i == 15) {
+                glm::vec3 pos = glm::vec3(2.0f, 0.0f, i * tileSize - 24.0f);
+                Obstacle* movingCube = new Obstacle(pos, 4);
                 obstacles.push_back(movingCube);
             }
         }
@@ -214,8 +238,6 @@ void Game::Init() {
             boundary->SetScale(glm::vec3(1.5f, 1.5f, 1.5f));
         }
     }
-
-
 }
 
 void Game::Run() {
@@ -233,18 +255,21 @@ void Game::Run() {
     glutKeyboardFunc(KeyboardDownCallback);
     glutKeyboardUpFunc(KeyboardUpCallback);
     glutReshapeFunc(ReshapeCallback);
-    glutMouseFunc(MouseCallback);  // 마우스 클릭 콜백
-    glutMotionFunc(MotionCallback); // 마우스 이동 콜백
+
     glutMainLoop();
 }
 
 void Game::Update(float deltaTime) {
+    glm::vec3 minBoundary(-7.0f, -1.0f, -29.0f);
+    glm::vec3 maxBoundary(7.0f, 1.0f, 10.0f);
 
-    if (camera->mode == FIRST_PERSON || camera->mode == THIRD_PERSON) {
-        character->Move(deltaTime, keys, *camera);
-    }
-    else
-        character->Move(deltaTime, keys);
+    glm::vec3 startMin(-2.0f, -1.0f, 10.0f);
+    glm::vec3 startMax(2.0f, 1.0f, 15.0f);
+
+    glm::vec3 endMin(-2.0f, -1.0f, -34.0f);
+    glm::vec3 endMax(2.0f, 1.0f, -29.0f);
+
+    character->Move(deltaTime, keys, minBoundary, maxBoundary, startMin, startMax, endMin, endMax);
     stage->Update(deltaTime);
     for (auto& obstacle : obstacles) {
         obstacle->Update(deltaTime, currentStage);
@@ -276,7 +301,7 @@ void Game::Update(float deltaTime) {
     for (auto& coin : coins) {
         coin->Update(deltaTime);
     }
-    camera->update(*character,deltaTime,mouseOffsetX,mouseOffsetY);
+    camera->update(*character);
 
 }
 void Game::Render() {
@@ -352,9 +377,7 @@ void Game::Render() {
 
     // 객체 렌더링
     stage->Draw(*shader, currentStage);
-    if (camera->mode != FIRST_PERSON) {
-        character->Draw(*shader);
-    }
+    character->Draw(*shader);
 
 
 
@@ -469,7 +492,6 @@ void Game::KeyboardDownCallback(unsigned char key, int x, int y) {
     }
     else if (key == 'c') {
         instance->SwitchCameraMode();
-        std::cout << instance->camera->mode << std::endl;
     }
     else if (key == '1') {
         instance->MoveStage(1);
@@ -523,40 +545,4 @@ bool Game::CheckCollisionAABBAndSphere(const Character& character, const Obstacl
     // 충돌 여부 확인
     return distance <= sphereRadius;
 
-}
-
-void Game::MouseCallback(int button, int state, int x, int y) {
-    if (button == GLUT_LEFT_BUTTON) {
-        instance->leftMouseButtonDown = (state == GLUT_DOWN);
-        instance->lastMouseX = x;
-        instance->lastMouseY = y;
-    }
-}
-
-void Game::MotionCallback(int x, int y) {
-    if (instance->leftMouseButtonDown) {
-        // 마우스 이동량 계산
-        float deltaX = x - instance->lastMouseX;
-        float deltaY = y - instance->lastMouseY;
-
-        // 민감도 조정
-        float sensitivity = 0.1f;
-        deltaX *= sensitivity;
-        deltaY *= sensitivity;
-
-        // 카메라 회전
-        instance->camera->Yaw += deltaX;
-        instance->camera->Pitch -= deltaY;
-
-        // Pitch 제한 (카메라가 수직 방향으로 완전히 돌아가는 것을 방지)
-        if (instance->camera->Pitch > 89.0f) instance->camera->Pitch = 89.0f;
-        if (instance->camera->Pitch < -89.0f) instance->camera->Pitch = -89.0f;
-
-        // 새로운 마우스 위치 업데이트
-        instance->lastMouseX = x;
-        instance->lastMouseY = y;
-
-        std::cout << "Camera Yaw: " << instance->camera->Yaw
-            << ", Pitch: " << instance->camera->Pitch << std::endl;
-    }
 }
