@@ -49,8 +49,8 @@ void Game::Init() {
     if (skybox != nullptr) delete skybox;
     stage = new Stage(currentStage);
     character = new Character();
-    
-  
+
+
 
 
     coins.clear();
@@ -136,13 +136,13 @@ void Game::Init() {
         coins.push_back(new Coin(glm::vec3(6.0, -0.25, 6.0)));
         // 세로 방향 장애물
         for (int i = 1; i <= 4; ++i) {
-            obstacles.push_back(new Obstacle(glm::vec3(-1.0f, 0.0f, -8.0f -2.0f * i)));  // 위쪽
-            obstacles.push_back(new Obstacle(glm::vec3(-1.0f, 0.0f, - 8.0f + 2.0f * i)));   // 아래쪽
+            obstacles.push_back(new Obstacle(glm::vec3(-1.0f, 0.0f, -8.0f - 2.0f * i)));  // 위쪽
+            obstacles.push_back(new Obstacle(glm::vec3(-1.0f, 0.0f, -8.0f + 2.0f * i)));   // 아래쪽
         }
 
         // 가로 방향 장애물
         for (int i = 1; i <= 4; ++i) {
-            obstacles.push_back(new Obstacle(glm::vec3(-1.0f -2.0f * i, 0.0f, -8.0f)));  // 왼쪽
+            obstacles.push_back(new Obstacle(glm::vec3(-1.0f - 2.0f * i, 0.0f, -8.0f)));  // 왼쪽
             obstacles.push_back(new Obstacle(glm::vec3(-1.0f + 2.0f * i, 0.0f, -8.0f)));   // 오른쪽
         }
     }
@@ -174,22 +174,45 @@ void Game::Init() {
                 if (tileMap[z][x] == 4) {
                     // 월드 좌표 계산
                     glm::vec3 pos = glm::vec3(
-                         x * tileSize - (mapWidth / 2) * tileSize,
+                        x * tileSize - (mapWidth / 2) * tileSize,
                         -0.25f, // 타일의 y 위치(-1.0f) 위에 약간 올려 배치
-                        z * tileSize - (mapHeight / 2) * tileSize -7.f
+                        z * tileSize - (mapHeight / 2) * tileSize - 7.f
                     );
 
                     // 원형 장애물 생성 (예: 빨간색, 반지름 1.0f)
-                   stage3Boundary.push_back(new Obstacle(pos));
-     
+                    stage3Boundary.push_back(new Obstacle(pos));
+
                 }
+            }
+        }
+        for (int i = 0; i <= 10; ++i) {
+            if (i == 0 || i == 1 || i == 2 || i == 4 || i == 5 || i == 6 || i == 8 || i == 9 || i == 10) {
+                glm::vec3 pos = glm::vec3(-21.0f, 0.0f, i * tileSize - 20.0f);
+                Obstacle* movingCube = new Obstacle(pos);
+                obstacles.push_back(movingCube);
+            }
+        }
+
+        for (int i = 0; i <= 10; ++i) {
+            if (i == 0 || i == 4 || i == 8) {
+                glm::vec3 pos = glm::vec3(-19.0f, 0.0f, i * tileSize - 22.0f);
+                Obstacle* movingCube = new Obstacle(pos);
+                obstacles.push_back(movingCube);
+            }
+        }
+
+        for (int i = 0; i <= 15; ++i) {
+            if (i == 0 || i == 3 || i == 6 || i == 9 || i == 12 || i == 15) {
+                glm::vec3 pos = glm::vec3(-11.0f, 0.0f, i * tileSize - 22.0f);
+                Obstacle* movingCube = new Obstacle(pos);
+                obstacles.push_back(movingCube);
             }
         }
         for (auto& boundary : stage3Boundary) {
             boundary->SetScale(glm::vec3(1.5f, 1.5f, 1.5f));
         }
     }
-    
+
 
 }
 
@@ -199,7 +222,7 @@ void Game::Run() {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_MULTISAMPLE);
     //glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK); // Back Face Culling
-  
+
     Init();
 
     // 콜백 함수 설정
@@ -296,11 +319,11 @@ void Game::Render() {
     // 활성화된 점광원 초기화
     pointLights.clear();
     for (auto& coin : coins) {
-            PointLight pl;
-            pl.position = coin->GetPosition();
-            pl.color = glm::vec3(1.0f, 0.843f, 0.0f); // 금색 빛
-            pl.intensity = 0.5f; // 조명 강도 (필요에 따라 조정)
-            pointLights.push_back(pl);
+        PointLight pl;
+        pl.position = coin->GetPosition();
+        pl.color = glm::vec3(1.0f, 0.843f, 0.0f); // 금색 빛
+        pl.intensity = 0.5f; // 조명 강도 (필요에 따라 조정)
+        pointLights.push_back(pl);
     }
 
     if (instance->currentStage == 2) {
@@ -372,7 +395,7 @@ void Game::Render() {
 
     shader->setMat4("view", view);
     shader->setMat4("projection", projection);
-  
+
     shader->setVec3("emission", glm::vec3(0.0f));
     shader->setInt("numPointLights", 0);
 
@@ -457,14 +480,15 @@ void Game::KeyboardDownCallback(unsigned char key, int x, int y) {
     }
     else if (key == 'y') {
         instance->wireframe = !instance->wireframe;
-        if ( instance->wireframe )
+        if (instance->wireframe)
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        else 
+        else
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-       
-    }else if (key == 'n' || key == 'N') {
+
+    }
+    else if (key == 'n' || key == 'N') {
         instance->showNormals = !instance->showNormals;
-      
+
     }
     else if (key == 27) { // ESC 키
         exit(0);
@@ -486,7 +510,7 @@ bool Game::CheckCollisionAABBAndSphere(const Character& character, const Obstacl
 
     // 구의 중심 및 반지름
     glm::vec3 sphereCenter = obstacle.Position;
-    float sphereRadius = 0.5f*obstacle.Scale.x; // 구의 반지름 (필요에 따라 조정)
+    float sphereRadius = 0.5f * obstacle.Scale.x; // 구의 반지름 (필요에 따라 조정)
 
     // AABB의 각 축에서 구의 중심을 투영
     glm::vec3 closestPoint = glm::clamp(sphereCenter, aabbMin, aabbMax);
