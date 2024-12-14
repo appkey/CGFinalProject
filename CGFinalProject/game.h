@@ -41,7 +41,7 @@ public:
     void SwitchCameraMode();
     void MoveStage(int);
     bool CheckCollisionAABBAndSphere(const Character&, const Obstacle&);
-
+    void CenterMouse();
 
 
     // 콜백 함수들

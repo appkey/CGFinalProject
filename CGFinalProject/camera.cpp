@@ -102,13 +102,13 @@ void Camera::update(Character& character, float deltaTime, float mouseOffsetX, f
         Pitch += mouseOffsetY * MouseSensitivity; // 위아래 회전
 
         // Pitch 제한
-        if (Pitch > 89.0f) Pitch = 89.0f;
-        if (Pitch < -10.0f) Pitch = -10.0f; // 카메라가 너무 아래로 내려가지 않도록 제한
+        if (Pitch > 45.0f) Pitch = 45.0f;
+        if (Pitch < -45.0f) Pitch = -45.0f; // 카메라가 너무 아래로 내려가지 않도록 제한
 
-        float radius = 7.0f; // 캐릭터와 카메라의 거리
+        float radius = 10.0f; // 캐릭터와 카메라의 거리
         glm::vec3 offset;
         offset.x = radius * cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-        offset.y = radius * sin(glm::radians(Pitch));
+        offset.y = radius * sin(glm::radians(-Pitch));
         offset.z = radius * sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
 
         Position = character.Position + offset; // 카메라 위치 계산
@@ -125,9 +125,13 @@ void Camera::update(Character& character, float deltaTime, float mouseOffsetX, f
 
 
 glm::vec3 Camera::GetForwardVector() const {
-    return glm::normalize(Target); // 정규화된 전방 벡터
+    glm::vec3 forward;
+    forward.x = cos(glm::radians(Yaw));
+    forward.y = 0.0f; // 항상 xz 평면
+    forward.z = sin(glm::radians(Yaw));
+    return glm::normalize(forward);
 }
 
 glm::vec3 Camera::GetRightVector() const {
-    return glm::normalize(glm::cross(GetForwardVector(), Up)); // 정규화된 오른쪽 벡터
+    return glm::normalize(glm::cross(GetForwardVector(), glm::vec3(0.0f, 1.0f, 0.0f)));
 }

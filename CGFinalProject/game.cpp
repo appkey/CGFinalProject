@@ -239,17 +239,8 @@ void Game::Run() {
 }
 
 void Game::Update(float deltaTime) {
-    glm::vec3 minBoundary(-7.0f, -1.0f, -29.0f);
-    glm::vec3 maxBoundary(7.0f, 1.0f, 10.0f);
 
-    glm::vec3 startMin(-2.0f, -1.0f, 10.0f);
-    glm::vec3 startMax(2.0f, 1.0f, 15.0f);
-
-    glm::vec3 endMin(-2.0f, -1.0f, -34.0f);
-    glm::vec3 endMax(2.0f, 1.0f, -29.0f);
-
-
-    if (camera->mode == FIRST_PERSON) {
+    if (camera->mode == FIRST_PERSON || camera->mode == THIRD_PERSON) {
         character->Move(deltaTime, keys, *camera);
     }
     else

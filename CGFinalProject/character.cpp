@@ -169,39 +169,41 @@ void Character::Draw(Shader& shader) {
 
 void Character::Move(float deltaTime, bool* keys) {
     float speed = 5.0f;
-    glm::vec3 newPosition = Position;
+    glm::vec3 newPosition = Position; // 기존 위치 복사
 
     // 방향 계산을 위한 이동 벡터
     glm::vec3 movement(0.0f);
 
     if (keys['w']) {
-        movement.z -= speed * deltaTime;
+        movement.z -= speed * deltaTime; // 전진
     }
     if (keys['s']) {
-        movement.z += speed * deltaTime;
+        movement.z += speed * deltaTime; // 후진
     }
     if (keys['a']) {
-        movement.x -= speed * deltaTime;
+        movement.x -= speed * deltaTime; // 왼쪽
     }
     if (keys['d']) {
-        movement.x += speed * deltaTime;
+        movement.x += speed * deltaTime; // 오른쪽
     }
-    
+
     // 이동 벡터가 0이 아닐 때 방향 벡터 업데이트
     if (glm::length(movement) > 0.0f) {
-        direction = glm::normalize(movement); // 정규화된 방향 벡터 계산
+        movement = glm::normalize(movement) * speed * deltaTime; // 정규화 및 속도 적용
+        direction = glm::normalize(glm::vec3(movement.x, 0.0f, movement.z)); // y 제외
     }
-   
-    // 위치 업데이트
-    movement.y = 0.f;
+
+    // xz 평면에서만 위치 업데이트
     newPosition += movement;
+    newPosition.y = Position.y; // y 값 고정
     Position = newPosition;
 
+    // 모델 매트릭스 업데이트
     UpdateModelMatrix();
 }
 
-
 void Character::Move(float deltaTime, bool* keys, Camera& camera) {
+    
     float speed = 5.0f * deltaTime; // 이동 속도
     glm::vec3 movement(0.0f);
 
@@ -211,23 +213,36 @@ void Character::Move(float deltaTime, bool* keys, Camera& camera) {
 
     // 키 입력 처리
     if (keys['w']) {
-        movement += forward; // 전방 이동
+        if (camera.mode == FIRST_PERSON)
+            movement += forward; // 전방 이동
+        else
+            movement -= forward;
     }
     if (keys['s']) {
-        movement -= forward; // 후방 이동
+        if (camera.mode == FIRST_PERSON)
+            movement -= forward; // 전방 이동
+        else
+            movement += forward;
     }
     if (keys['a']) {
-        movement -= right; // 좌측 이동
+        if (camera.mode == FIRST_PERSON)
+            movement -= right; // 전방 이동
+        else
+            movement += right;
+     
     }
     if (keys['d']) {
-        movement += right; // 우측 이동
+        if (camera.mode == FIRST_PERSON)
+            movement += right; // 전방 이동
+        else
+            movement -= right;
     }
 
     // 이동 벡터가 0이 아닐 경우 정규화
     if (glm::length(movement) > 0.0f) {
         movement = glm::normalize(movement) * speed;
     }
-
+    movement.y = 0.0f;
     // 위치 업데이트
     Position += movement;
 }
