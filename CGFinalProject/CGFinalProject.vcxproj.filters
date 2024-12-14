@@ -71,12 +71,21 @@
     <ClInclude Include="coin.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="point_light.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vertex_shader.glsl">
       <Filter>shaders</Filter>
     </None>
     <None Include="fragment_shader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="coin_vertex_shader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="coin_fragment_shader.glsl">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

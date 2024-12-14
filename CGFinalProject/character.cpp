@@ -1,10 +1,13 @@
 #include "character.h"
 #include <gl/glm/gtc/matrix_transform.hpp>
+#include <gl/glm/gtc/type_ptr.hpp> // glm::value_ptr 사용을 위해 추가
 #include <iostream>
+#include <vector>
+#include <cmath>
 
 Character::Character() : isInvincible(false) {
     Position = glm::vec3(0.0f, -0.25f, 13.5f);
-    Scale = glm::vec3(1.0f,1.1f,1.0f);
+    Scale = glm::vec3(1.0f, 1.1f, 1.0f);
     Rotation = glm::vec3(0.0f);
     color = glm::vec3(1.0f, 0.0f, 0.0f);
     Init();
@@ -17,39 +20,70 @@ Character::~Character() {
 }
 
 void Character::Init() {
-    // 큐브의 정점 데이터 (8개의 정점)
+    // 큐브의 정점 데이터 (24개의 정점 - 각 면마다 4개씩)
     std::vector<Vertex> vertices = {
-        // 위치                       // 법선             // 색상
-        {{-0.5f, -0.5f, -0.5f},    {0.0f, 0.0f, 0.0f}}, // 정점 0
-        {{ 0.5f, -0.5f, -0.5f},    {0.0f, 0.0f, 0.0f}}, // 정점 1
-        {{ 0.5f,  0.5f, -0.5f},    {0.0f, 0.0f, 0.0f}}, // 정점 2
-        {{-0.5f,  0.5f, -0.5f},    {0.0f, 0.0f, 0.0f}}, // 정점 3
-        {{-0.5f, -0.5f,  0.5f},    {0.0f, 0.0f, 0.0f}}, // 정점 4
-        {{ 0.5f, -0.5f,  0.5f},    {0.0f, 0.0f, 0.0f}}, // 정점 5
-        {{ 0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 0.0f}}, // 정점 6
-        {{-0.5f,  0.5f,  0.5f},    {0.0f, 0.0f, 0.0f}}  // 정점 7
+        // 앞면 (Z+)
+        { {-0.5f, -0.5f,  0.5f}, {0.0f, 0.0f, 1.0f} },
+        { { 0.5f, -0.5f,  0.5f}, {0.0f, 0.0f, 1.0f} },
+        { { 0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f} },
+        { {-0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f} },
+
+        // 뒷면 (Z-)
+        { {-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, -1.0f} },
+        { { 0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, -1.0f} },
+        { { 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, -1.0f} },
+        { {-0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, -1.0f} },
+
+        // 왼쪽 면 (X-)
+        { {-0.5f, -0.5f, -0.5f}, {-1.0f, 0.0f, 0.0f} },
+        { {-0.5f, -0.5f,  0.5f}, {-1.0f, 0.0f, 0.0f} },
+        { {-0.5f,  0.5f,  0.5f}, {-1.0f, 0.0f, 0.0f} },
+        { {-0.5f,  0.5f, -0.5f}, {-1.0f, 0.0f, 0.0f} },
+
+        // 오른쪽 면 (X+)
+        { { 0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f} },
+        { { 0.5f, -0.5f,  0.5f}, {1.0f, 0.0f, 0.0f} },
+        { { 0.5f,  0.5f,  0.5f}, {1.0f, 0.0f, 0.0f} },
+        { { 0.5f,  0.5f, -0.5f}, {1.0f, 0.0f, 0.0f} },
+
+        // 아래 면 (Y-)
+        { {-0.5f, -0.5f, -0.5f}, {0.0f, -1.0f, 0.0f} },
+        { { 0.5f, -0.5f, -0.5f}, {0.0f, -1.0f, 0.0f} },
+        { { 0.5f, -0.5f,  0.5f}, {0.0f, -1.0f, 0.0f} },
+        { {-0.5f, -0.5f,  0.5f}, {0.0f, -1.0f, 0.0f} },
+
+        // 위 면 (Y+)
+        { {-0.5f,  0.5f, -0.5f}, {0.0f, 1.0f, 0.0f} },
+        { { 0.5f,  0.5f, -0.5f}, {0.0f, 1.0f, 0.0f} },
+        { { 0.5f,  0.5f,  0.5f}, {0.0f, 1.0f, 0.0f} },
+        { {-0.5f,  0.5f,  0.5f}, {0.0f, 1.0f, 0.0f} }
     };
 
-    // 큐브의 인덱스 데이터
+    // 인덱스 데이터 (각 면마다 두 개의 삼각형)
     std::vector<unsigned int> indices = {
         // 앞면
-        4, 5, 6,
-        6, 7, 4,
-        // 뒷면
         0, 1, 2,
         2, 3, 0,
+
+        // 뒷면
+        4, 5, 6,
+        6, 7, 4,
+
         // 왼쪽 면
-        0, 4, 7,
-        7, 3, 0,
-        // 오른쪽 면
-        1, 5, 6,
-        6, 2, 1,
-        // 아래 면
-        0, 1, 5,
-        5, 4, 0,
-        // 위 면
-        3, 2, 6,
-        6, 7, 3
+        8, 9,10,
+       10,11, 8,
+
+       // 오른쪽 면
+      12,13,14,
+      14,15,12,
+
+      // 아래 면
+     16,17,18,
+     18,19,16,
+
+     // 위 면
+    20,21,22,
+    22,23,20
     };
 
     indexCount = static_cast<int>(indices.size());
@@ -94,17 +128,18 @@ void Character::ToggleInvincibility() {
 void Character::setPosition(const glm::vec3& pos)
 {
     Position = pos;
-
 }
 
 void Character::startPos(const int currentStage)
 {
     if (currentStage == 1) {
         Position = glm::vec3(0.0f, -0.25f, 13.5f);
-    } else if (currentStage == 2) {
-            Position = glm::vec3(-15.f, -0.25f, 1.f);
-    } else if (currentStage == 3) {
-        ;
+    }
+    else if (currentStage == 2) {
+        Position = glm::vec3(-15.f, -0.25f, 1.f);
+    }
+    else if (currentStage == 3) {
+        // 추가적인 스테이지 3 설정 필요 시 여기에 작성
     }
 }
 
@@ -120,7 +155,7 @@ void Character::UpdateModelMatrix() {
 void Character::Draw(Shader& shader) {
     UpdateModelMatrix();
     shader.Use();
-    glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, &ModelMatrix[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(ModelMatrix));
     glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), color.x, color.y, color.z); // 빨간색
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
@@ -144,20 +179,7 @@ void Character::Move(float deltaTime, bool* keys, const glm::vec3& minBoundary, 
         newPosition.x += speed * deltaTime;
     }
 
-    // 경계 체크
-    bool insideMainBoundary =
-        newPosition.x >= minBoundary.x && newPosition.x <= maxBoundary.x &&
-        newPosition.z >= minBoundary.z && newPosition.z <= maxBoundary.z;
+    Position = newPosition;
 
-    bool insideStartBoundary =
-        newPosition.x >= startMin.x && newPosition.x <= startMax.x &&
-        newPosition.z >= startMin.z && newPosition.z <= startMax.z;
-
-    bool insideEndBoundary =
-        newPosition.x >= endMin.x && newPosition.x <= endMax.x &&
-        newPosition.z >= endMin.z && newPosition.z <= endMax.z;
-
-   // if (insideMainBoundary || insideStartBoundary || insideEndBoundary) {
-        Position = newPosition;
-   // }
+    UpdateModelMatrix();
 }

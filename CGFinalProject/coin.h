@@ -11,6 +11,8 @@ public:
     void Update(float deltaTime);
     void Draw(Shader& shader);
 
+    void Draw(Shader& shader, const glm::mat4& view, const glm::mat4& projection);
+
     void SetCollected();
     bool IsCollected() const;
 

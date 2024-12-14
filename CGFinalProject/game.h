@@ -1,6 +1,6 @@
 #ifndef GAME_H
 #define GAME_H
-
+#define MAX_POINT_LIGHTS 10
 #include "stage.h"
 #include "character.h"
 #include "camera.h"
@@ -8,7 +8,7 @@
 #include "obstacle.h"
 #include "coin.h"
 #include <vector>
-
+#include "point_light.h"
 class Game {
 public:
     int currentStage;
@@ -16,11 +16,12 @@ public:
     Character* character;
     Camera* camera;
     Shader* shader;
+    Shader* coinShader;
     std::vector<Obstacle*> obstacles;
     std::vector<Coin*> coins;           // Stage Clear Condition preys.size() == 0이여야함
-
-
-
+    std::vector<PointLight> pointLights;
+    bool wireframe;
+    bool showNormals; // 노멀 시각화 여부
 
 
 

@@ -147,10 +147,13 @@
     <ClInclude Include="game.h" />
     <ClInclude Include="model_loader.h" />
     <ClInclude Include="obstacle.h" />
+    <ClInclude Include="point_light.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="stage.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="coin_fragment_shader.glsl" />
+    <None Include="coin_vertex_shader.glsl" />
     <None Include="fragment_shader.glsl" />
     <None Include="vertex_shader.glsl" />
   </ItemGroup>

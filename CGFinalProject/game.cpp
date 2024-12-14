@@ -2,6 +2,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <gl/glm/gtc/matrix_transform.hpp>
+#include <gl/glm/gtc/type_ptr.hpp>
 #include <cstring> // memset을 위한 헤더
 #include <iostream>
 
@@ -13,10 +14,14 @@ Game::Game() {
     character = new Character();
     camera = new Camera();
     shader = new Shader("vertex_shader.glsl", "fragment_shader.glsl");
+    coinShader = new Shader("coin_vertex_shader.glsl", "coin_fragment_shader.glsl");
+
+    showNormals = false;
     deltaTime = 0.0f;
     lastFrame = 0.0f;
     memset(keys, 0, sizeof(keys));
     instance = this;
+    wireframe = false;
 }
 
 Game::~Game() {
@@ -29,8 +34,7 @@ Game::~Game() {
 void Game::Init() {
     if (stage != nullptr) delete stage;
     if (character != nullptr) delete character;
-
-
+  
     stage = new Stage(currentStage);
     character = new Character();
 
@@ -78,7 +82,9 @@ void Game::Init() {
 void Game::Run() {
 
     glEnable(GL_DEPTH_TEST);
-
+    //glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK); // Back Face Culling
+  
     Init();
 
     // 콜백 함수 설정
@@ -123,76 +129,143 @@ void Game::Update(float deltaTime) {
     camera->update(*character);
 
 }
-
 void Game::Render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
+    glClearColor(0.5f, 0.5f, 0.5f, 1.0f); // 배경색 설정
 
+    // 메인 뷰포트 설정
     glViewport(0, 0, 1600, 900);
     shader->Use();
-    // 뷰 및 프로젝션 행렬 설정
+
+    // 뷰 및 프로젝션 매트릭스 설정
     glm::mat4 view = camera->GetViewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1600.0f / 900.0f, 0.1f, 100.0f);
 
-    glUniformMatrix4fv(glGetUniformLocation(shader->Program, "view"), 1, GL_FALSE, &view[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(shader->Program, "projection"), 1, GL_FALSE, &projection[0][0]);
+    shader->setMat4("view", view);
+    shader->setMat4("projection", projection);
 
     // 조명 설정
-    glm::vec3 lightPos = glm::vec3(0.0f, 20.0f, -10.0f);
-    glUniform3fv(glGetUniformLocation(shader->Program, "lightPos"), 1, &lightPos[0]);
-    glUniform3fv(glGetUniformLocation(shader->Program, "viewPos"), 1, &camera->Position[0]);
+    glm::vec3 mainLightPos = glm::vec3(0.0f, 20.0f, -10.0f); // 기본 조명 위치
+    glm::vec3 mainLightColor = glm::vec3(1.0f, 1.0f, 1.0f); // 기본 조명 색상 (흰색)
 
+    // 스테이지 2일 경우 조명 위치와 색상 변경
+    if (currentStage == 2) {
+        mainLightPos = glm::vec3(-1.0f, 4.0f, -3.0f); // 중앙 장애물 위치로 조명 위치 변경
+        mainLightColor = glm::vec3(0.3f, 0.3f, 0.3f); // 조명 색상 약하게 설정 (회색)
+    }
+
+    // 주요 광원 유니폼 설정
+    shader->setVec3("lightPos", mainLightPos);
+    shader->setVec3("lightColor", mainLightColor);
+    shader->setVec3("viewPos", camera->Position);
+
+    // 노멀 시각화 여부 설정
+    shader->setBool("showNormals", showNormals);
+
+    // 발광 초기화 (필요 시 제거)
+    shader->setVec3("emission", glm::vec3(0.0f));
+
+    // 활성화된 점광원 초기화
+    pointLights.clear();
+    for (auto& coin : coins) {
+            PointLight pl;
+            pl.position = coin->GetPosition();
+            pl.color = glm::vec3(1.0f, 0.843f, 0.0f); // 금색 빛
+            pl.intensity = 0.5f; // 조명 강도 (필요에 따라 조정)
+            pointLights.push_back(pl);
+    }
+
+    if (instance->currentStage == 2) {
+        PointLight p1;
+        p1.position = character->getPosition();
+        p1.color = glm::vec3(1.0f, 1.0f, 1.0f);
+        p1.intensity = 0.6;
+        pointLights.push_back(p1);
+    }
+
+    // 점광원 유니폼 설정
+    int activePointLights = static_cast<int>(pointLights.size());
+    if (activePointLights > MAX_POINT_LIGHTS) {
+        activePointLights = MAX_POINT_LIGHTS; // 최대 광원 수 제한
+    }
+    shader->setInt("numPointLights", activePointLights);
+    for (int i = 0; i < activePointLights; ++i) {
+        std::string idx = std::to_string(i);
+        shader->setVec3("pointLights[" + idx + "].position", pointLights[i].position);
+        shader->setVec3("pointLights[" + idx + "].color", pointLights[i].color);
+        shader->setFloat("pointLights[" + idx + "].intensity", pointLights[i].intensity);
+    }
+
+    // 발광 비활성화
+    shader->setVec3("emission", glm::vec3(0.0f));
+
+    // 객체 렌더링
     stage->Draw(*shader, currentStage);
     character->Draw(*shader);
-   for (auto& coin : coins) {
-        coin->Draw(*shader);
-    }
+
     for (auto& obs : obstacles) {
         obs->Draw(*shader);
     }
-  
-    glViewport(1200, 700, 400, 200);
-    shader->Use();
 
-    // 원근 투영 행렬 설정
+    // 코인 렌더링 (발광 설정은 여전히 필요 없으므로 emission을 0으로 유지)
+    for (auto& coin : coins) {
+        coin->Draw(*coinShader, view, projection);
+    }
+
+    // 미니맵 렌더링
+    // 미니맵 1
+    glViewport(1200, 700, 400, 200);
     shader->Use();
 
     // 직교 투영 행렬 설정
     float orthoWidth = 30.0f; // 맵 가로 크기
     float orthoHeight = 20.0f; // 맵 세로 크기
-    view = glm::lookAt(glm::vec3(character->getPosition().x, 30.0f, character->getPosition().z), glm::vec3(glm::vec3(character->getPosition().x, 0, character->getPosition().z)), glm::vec3(0.0f, 0.0f, -1.0f));
-    projection = glm::ortho(-orthoWidth / 2.0f, orthoWidth / 2.0f, -orthoHeight / 2.0f, orthoHeight / 2.0f, 0.1f, 100.0f);
+    view = glm::lookAt(glm::vec3(character->getPosition().x, 30.0f, character->getPosition().z),
+        glm::vec3(character->getPosition().x, 0.0f, character->getPosition().z),
+        glm::vec3(0.0f, 0.0f, -1.0f));
+    projection = glm::ortho(-orthoWidth / 2.0f, orthoWidth / 2.0f,
+        -orthoHeight / 2.0f, orthoHeight / 2.0f,
+        0.1f, 100.0f);
 
-    glUniformMatrix4fv(glGetUniformLocation(shader->Program, "view"), 1, GL_FALSE, &view[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(shader->Program, "projection"), 1, GL_FALSE, &projection[0][0]);
+    shader->setMat4("view", view);
+    shader->setMat4("projection", projection);
+  
+    // 발광 초기화 및 점광원 비활성화
+    shader->setVec3("emission", glm::vec3(0.0f));
+    shader->setInt("numPointLights", 0);
 
-    // 미니맵 렌더링
     stage->Draw(*shader, currentStage);
     character->Draw(*shader);
     for (auto& obs : obstacles) {
         obs->Draw(*shader);
     }
     for (auto& coin : coins) {
-        coin->Draw(*shader);
+        coin->Draw(*coinShader, view, projection); // 미니맵에서도 코인 전용 셰이더 사용
     }
 
-    glViewport(1200, 450, 400, 200); // 미니맵 아래 영역
-    view = glm::lookAt(glm::vec3(0.0f, 0.0f, 30.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    projection = glm::ortho(-15.0f, 15.0f, -10.0f, 10.0f, 0.1f, 100.0f);
+    // 미니맵 2
+    //glViewport(1200, 450, 400, 200); // 미니맵 아래 영역
+    //view = glm::lookAt(glm::vec3(0.0f, 0.0f, 30.0f),
+    //    glm::vec3(0.0f, 0.0f, 0.0f),
+    //    glm::vec3(0.0f, 1.0f, 0.0f));
+    //projection = glm::ortho(-15.0f, 15.0f, -10.0f, 10.0f, 0.1f, 100.0f);
 
-    glUniformMatrix4fv(glGetUniformLocation(shader->Program, "view"), 1, GL_FALSE, &view[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(shader->Program, "projection"), 1, GL_FALSE, &projection[0][0]);
+    //shader->setMat4("view", view);
+    //shader->setMat4("projection", projection);
 
-    // 평면도 그리기
-    stage->Draw(*shader, currentStage);
-    character->Draw(*shader);
-    for (auto& obs : obstacles) {
-        obs->Draw(*shader);
-    }
-   
-    for (auto& coin : coins) {
-        coin->Draw(*shader);
-    }
+    //// 발광 초기화 및 점광원 비활성화
+    //shader->setVec3("emission", glm::vec3(0.0f));
+    //shader->setInt("numPointLights", 0);
+
+    //// 평면도 그리기
+    //stage->Draw(*shader, currentStage);
+    //character->Draw(*shader);
+    //for (auto& obs : obstacles) {
+    //    obs->Draw(*shader);
+    //}
+    //for (auto& coin : coins) {
+    //    coin->Draw(*coinShader,view,projection);
+    //}
 
     glutSwapBuffers();
 }
@@ -227,6 +300,17 @@ void Game::KeyboardDownCallback(unsigned char key, int x, int y) {
     }
     else if (key == '2') {
         instance->MoveStage(2);
+    }
+    else if (key == 'y') {
+        instance->wireframe = !instance->wireframe;
+        if ( instance->wireframe )
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        else 
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+       
+    }else if (key == 'n' || key == 'N') {
+        instance->showNormals = !instance->showNormals;
+      
     }
     else if (key == 27) { // ESC 키
         exit(0);

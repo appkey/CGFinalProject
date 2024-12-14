@@ -26,6 +26,9 @@ void Coin::Update(float deltaTime) {
 void Coin::Draw(Shader& shader) {
     if (collected) return; // 코인이 수집된 경우 렌더링하지 않음
 
+    shader.Use();
+    shader.setVec3("emission", glm::vec3(0.3f));
+
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, position);
     // 회전
@@ -34,12 +37,45 @@ void Coin::Draw(Shader& shader) {
     float scaleFactor = 1.f;
     model = glm::scale(model, glm::vec3(scaleFactor));
 
-    shader.Use();
+    
     glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
     // 재질 특성 설정 (금색)
     glm::vec3 coinColor = glm::vec3(1.0f, 0.843f, 0.0f); // 금색
     glUniform3fv(glGetUniformLocation(shader.Program, "objectColor"), 1, glm::value_ptr(coinColor));
+
+    // 코인을 렌더링합니다.
+    glBindVertexArray(vao);
+    glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+    shader.setVec3("emission", glm::vec3(0.0f));
+}
+
+
+void Coin::Draw(Shader& shader, const glm::mat4& view, const glm::mat4& projection) {
+    if (collected) return; // 코인이 수집된 경우 렌더링하지 않음
+
+    shader.Use();
+
+    // 모델 매트릭스 설정
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, position);
+    // 회전
+    model = glm::rotate(model, glm::radians(rotationAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+    // 스케일을 조절해서 동전처럼 얇고 넓은 원판 모양으로
+    float scaleFactor = 1.0f;
+    model = glm::scale(model, glm::vec3(scaleFactor));
+
+    // 셰이더 유니폼 설정
+    shader.setMat4("model", model);
+    shader.setMat4("view", view);
+    shader.setMat4("projection", projection);
+
+    // 객체 색상과 발광 색상 설정
+    glm::vec3 coinColor = glm::vec3(1.0f, 0.843f, 0.0f); // 금색
+    glm::vec3 emissionColor = glm::vec3(0.7f, 0.7f, 0.7f); // 발광 색상 (금색 빛)
+    shader.setVec3("objectColor", coinColor);
+    shader.setVec3("emission", emissionColor);
 
     // 코인을 렌더링합니다.
     glBindVertexArray(vao);
