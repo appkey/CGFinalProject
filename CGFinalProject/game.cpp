@@ -40,10 +40,16 @@ void Game::Init() {
 
     coins.clear();
     obstacles.clear();
-    
+    stage1Boundary.clear();
 
     if (currentStage == 1) {
         // 스테이지 1의 장애물 설정
+        float boundaryX = 8.0f;  // 스테이지 X 경계
+        float boundaryZ = 30.0f;  // 스테이지 Z 경계
+        float spacing = 2.0f;     // 장애물 간 간격
+        float smallSquareOffset = 3.0f;
+        float smallSquareSize = 2.0f;
+
         coins.push_back(new Coin(glm::vec3(-6.0f, 0.0f, 9.5f)));
         coins.push_back(new Coin(glm::vec3(6.0f, 0.0f, -24.5f)));
         for (int i = 0; i < 10; ++i) {
@@ -51,10 +57,35 @@ void Game::Init() {
         }
         for (int i = 0; i < 10; ++i) {
             obstacles.push_back(new Obstacle(glm::vec3(+4.0f, 0.0f, -4.f * i + 1.f)));
-            
-        }
-      
 
+        }
+        for (float x = -boundaryX; x <= boundaryX; x += spacing) {
+            if (x < -smallSquareSize || x > smallSquareSize) {
+                stage1Boundary.push_back(new Obstacle(glm::vec3(x, -1.0f, -boundaryZ - 7.0f)));  // 뒷면
+                stage1Boundary.push_back(new Obstacle(glm::vec3(x, -1.0f, boundaryZ - 27.0f)));   // 앞면
+            }
+        }
+        for (float z = -boundaryZ; z <= boundaryZ - 20.0f; z += spacing) {
+            stage1Boundary.push_back(new Obstacle(glm::vec3(-boundaryX, -1.0f, z - 7.0f)));  // 왼쪽
+            stage1Boundary.push_back(new Obstacle(glm::vec3(boundaryX, -1.0f, z - 7.0f)));   // 오른쪽
+
+        }
+        for (float x = -smallSquareSize; x <= smallSquareSize; x += spacing) {
+            // 뒷면 작은 사각형
+            stage1Boundary.push_back(new Obstacle(glm::vec3(x, -1.0f, -boundaryZ - smallSquareOffset - 10.0f)));
+
+            // 앞면 작은 사각형
+            stage1Boundary.push_back(new Obstacle(glm::vec3(x, -1.0f, boundaryZ + smallSquareOffset - 25.0f)));
+        }
+        for (float z = -smallSquareOffset; z <= smallSquareOffset; z += spacing) {
+            // 뒷면 작은 사각형 왼쪽/오른쪽
+            stage1Boundary.push_back(new Obstacle(glm::vec3(-smallSquareSize, -1.0f, -boundaryZ + z - 10.0f)));
+            stage1Boundary.push_back(new Obstacle(glm::vec3(smallSquareSize, -1.0f, -boundaryZ + z - 10.0f)));
+
+            // 앞면 작은 사각형 왼쪽/오른쪽
+            stage1Boundary.push_back(new Obstacle(glm::vec3(-smallSquareSize, -1.0f, boundaryZ + z - 25.0f)));
+            stage1Boundary.push_back(new Obstacle(glm::vec3(smallSquareSize, -1.0f, boundaryZ + z - 25.0f)));
+        }
     }
     else if (currentStage == 2) {
         character->startPos(2);
@@ -152,6 +183,12 @@ void Game::Update(float deltaTime) {
             }
         }
     }
+    for (auto& boundary : stage1Boundary) {
+        if (CheckCollisionAABBAndSphere(*character, *boundary)) {
+            character->startPos(currentStage);
+            return;
+        }
+    }
     if (instance->currentStage == 3) {
         for (auto& boundary : stage3Boundary) {
             if (!character->isInvincible && CheckCollisionAABBAndSphere(*character, *boundary)) {
@@ -247,6 +284,10 @@ void Game::Render() {
         for (auto& boundary : stage3Boundary) {
             boundary->Draw(*shader);
         }
+    }
+
+    for (auto& boundary : stage1Boundary) {
+        boundary->Draw(*shader);
     }
 
     // 코인 렌더링 (발광 설정은 여전히 필요 없으므로 emission을 0으로 유지)
