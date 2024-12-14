@@ -12,7 +12,7 @@ Obstacle::Obstacle(glm::vec3 pos) {
     color = glm::vec3(0.0f, 0.0f, 1.0f);
 
     if (Position.x > 0.0f) {
-        direction = glm::vec3(-1.0f, 0.0f, 0.0f); 
+        direction = glm::vec3(-1.0f, 0.0f, 0.0f);
     }
     else {
         direction = glm::vec3(1.0f, 0.0f, 0.0f);
@@ -118,24 +118,35 @@ void Obstacle::Draw(Shader& shader) {
     UpdateModelMatrix();
     shader.Use();
     glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, &ModelMatrix[0][0]);
-    glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), color.x, color.y, color.z); // 빨간색
+    glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), color.x, color.y, color.z); 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 
 }
 
-void Obstacle::Update(float deltaTime) {
+void Obstacle::Update(float deltaTime, int currentStage) {
     float speed = 3.5f; // 이동 속도
-    float boundary = 7.0f; // 경계 위치
+    float rotationSpeed = 45.0f; // 회전 속도 (도/초)
 
-    Position += direction * speed * deltaTime;
-
-    if (Position.x >= boundary) {
-        direction.x = -1.0f; 
+    if (currentStage == 2) {
+        glm::vec3 center = glm::vec3(-1.0f, 0.0f, -1.0f);
+        float rotationAngle = glm::radians(rotationSpeed * deltaTime);
+        // 회전 매트릭스 생성 (y축 기준 회전)
+        glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), rotationAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+        // 장애물의 위치 회전
+        Position = glm::vec3(rotationMatrix * glm::vec4(Position - center, 1.0f)) + center;
     }
-    else if (Position.x <= -boundary) {
-        direction.x = 1.0f; 
+    else {
+        Position += direction * speed * deltaTime;
+
+        float boundary = 7.0f; 
+        if (Position.x >= boundary) {
+            direction.x = -1.0f;
+        }
+        else if (Position.x <= -boundary) {
+            direction.x = 1.0f;
+        }
     }
 
     UpdateModelMatrix();
