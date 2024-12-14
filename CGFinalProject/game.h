@@ -51,6 +51,7 @@ public:
     static void ReshapeCallback(int width, int height);
     static void MouseCallback(int button, int state, int x, int y); // 마우스 클릭 콜백
     static void MotionCallback(int x, int y);
+    static void PassiveMotionCallback(int x, int y);
 private:
     static Game* instance;
     float deltaTime;

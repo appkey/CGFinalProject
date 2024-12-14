@@ -52,7 +52,7 @@ void Game::Init() {
     stage = new Stage(currentStage);
     character = new Character();
 
-
+    CenterMouse();
 
 
     coins.clear();
@@ -154,12 +154,12 @@ void Game::Init() {
 
         std::vector<std::string> faces
         {
-            "res/skybox/3-1.png",
-            "res/skybox/3-2.png",
-            "res/skybox/3-3.png",
-            "res/skybox/3-4.png",
-            "res/skybox/3-5.png",
-            "res/skybox/3-6.png"
+            "res/skybox/corona_ft.png",
+            "res/skybox/corona_bk.png",
+            "res/skybox/corona_up.png",
+            "res/skybox/corona_dn.png",
+            "res/skybox/corona_rt.png",
+            "res/skybox/corona_lf.png"
         };
         skybox = new Skybox(faces);
 
@@ -233,8 +233,8 @@ void Game::Run() {
     glutKeyboardFunc(KeyboardDownCallback);
     glutKeyboardUpFunc(KeyboardUpCallback);
     glutReshapeFunc(ReshapeCallback);
-    glutMouseFunc(MouseCallback);  // 마우스 클릭 콜백
-    glutMotionFunc(MotionCallback); // 마우스 이동 콜백
+    glutPassiveMotionFunc(PassiveMotionCallback); 
+    glutSetCursor(GLUT_CURSOR_NONE); // 커서 가리기
     glutMainLoop();
 }
 
@@ -457,6 +457,8 @@ void Game::DisplayCallback() {
     instance->deltaTime = currentFrame - instance->lastFrame;
     instance->lastFrame = currentFrame;
 
+    instance->CenterMouse();
+
     instance->Update(instance->deltaTime);
     instance->Render();
 }
@@ -524,6 +526,17 @@ bool Game::CheckCollisionAABBAndSphere(const Character& character, const Obstacl
     return distance <= sphereRadius;
 
 }
+void Game::CenterMouse() {
+    int centerX = glutGet(GLUT_WINDOW_WIDTH) / 2;
+    int centerY = glutGet(GLUT_WINDOW_HEIGHT) / 2;
+
+    // 마우스를 창의 중심으로 이동
+    glutWarpPointer(centerX, centerY);
+
+    // 이전 마우스 위치를 중앙으로 설정
+    lastMouseX = centerX;
+    lastMouseY = centerY;
+}
 
 void Game::MouseCallback(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON) {
@@ -534,29 +547,56 @@ void Game::MouseCallback(int button, int state, int x, int y) {
 }
 
 void Game::MotionCallback(int x, int y) {
-    if (instance->leftMouseButtonDown) {
-        // 마우스 이동량 계산
-        float deltaX = x - instance->lastMouseX;
-        float deltaY = y - instance->lastMouseY;
+    int centerX = glutGet(GLUT_WINDOW_WIDTH) / 2;
+    int centerY = glutGet(GLUT_WINDOW_HEIGHT) / 2;
 
-        // 민감도 조정
-        float sensitivity = 0.1f;
-        deltaX *= sensitivity;
-        deltaY *= sensitivity;
+    // 마우스 이동량 계산
+    float deltaX = x - instance->lastMouseX;
+    float deltaY = y - instance->lastMouseY;
 
-        // 카메라 회전
-        instance->camera->Yaw += deltaX;
-        instance->camera->Pitch -= deltaY;
+    // 민감도 조정
+    float sensitivity = 0.1f;
+    deltaX *= sensitivity;
+    deltaY *= sensitivity;
 
-        // Pitch 제한 (카메라가 수직 방향으로 완전히 돌아가는 것을 방지)
-        if (instance->camera->Pitch > 89.0f) instance->camera->Pitch = 89.0f;
-        if (instance->camera->Pitch < -89.0f) instance->camera->Pitch = -89.0f;
+    // 카메라 회전 업데이트
+    instance->camera->Yaw += deltaX;
+    instance->camera->Pitch -= deltaY;
 
-        // 새로운 마우스 위치 업데이트
-        instance->lastMouseX = x;
-        instance->lastMouseY = y;
+    // Pitch 제한
+    if (instance->camera->Pitch > 89.0f) instance->camera->Pitch = 89.0f;
+    if (instance->camera->Pitch < -89.0f) instance->camera->Pitch = -89.0f;
 
-        std::cout << "Camera Yaw: " << instance->camera->Yaw
-            << ", Pitch: " << instance->camera->Pitch << std::endl;
-    }
+    // 마우스를 창의 중심으로 이동
+    instance->CenterMouse();
+}
+
+
+void Game::PassiveMotionCallback(int x, int y) {
+    int centerX = glutGet(GLUT_WINDOW_WIDTH) / 2;
+    int centerY = glutGet(GLUT_WINDOW_HEIGHT) / 2;
+
+    // 마우스 이동량 계산
+    float deltaX = x - instance->lastMouseX;
+    float deltaY = y - instance->lastMouseY;
+
+    // 민감도 조정
+    float sensitivity = 0.1f;
+    deltaX *= sensitivity;
+    deltaY *= sensitivity;
+
+    // 카메라 회전 업데이트
+    instance->camera->Yaw += deltaX;
+    instance->camera->Pitch -= deltaY;
+
+    // Pitch 제한
+    if (instance->camera->Pitch > 89.0f) instance->camera->Pitch = 89.0f;
+    if (instance->camera->Pitch < -89.0f) instance->camera->Pitch = -89.0f;
+
+    // 마우스 마지막 위치 업데이트
+    instance->lastMouseX = x;
+    instance->lastMouseY = y;
+
+    // 마우스를 창의 중심으로 이동
+    instance->CenterMouse();
 }
