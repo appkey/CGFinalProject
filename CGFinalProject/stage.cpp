@@ -26,7 +26,7 @@ Stage::Stage(int number) {
     else if (stageNumber == 3) {
         tileMap = {
             {4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4},
-            {4,3,2,3,2,3,2,3,2,3,4,3,2,3,2,3,2,3,2,3,4,1,1,2,3,2,4},
+            {4,6,2,3,2,3,2,3,2,3,4,6,2,3,2,3,2,3,2,3,4,1,1,2,3,2,4},
             {4,2,3,2,3,2,3,2,3,2,4,2,3,2,3,2,3,2,3,2,4,1,1,3,2,3,4},
             {4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,4,4,4,3,2,4},
             {4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,3,2,3,2,3,4},
@@ -45,7 +45,7 @@ Stage::Stage(int number) {
             {4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,2,3,2,3,2,4},
             {4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,4,4,4,2,3,4},
             {4,1,1,1,1,4,2,3,2,3,2,3,2,3,2,4,2,3,2,3,3,2,3,2,3,2,4},
-            {4,1,1,1,1,4,3,2,3,2,3,2,3,2,3,4,3,2,3,2,2,3,2,3,2,2,4},
+            {4,1,1,1,1,4,6,2,3,2,3,2,3,2,3,4,6,2,3,2,2,3,2,3,2,2,4},
             { 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4 }
         };
     }
@@ -157,6 +157,7 @@ void Stage::Draw(Shader& shader, int stageNumber) {
     shader.Use();
     if (stageNumber == 1) {
         // 메인 플랫폼
+        shader.setFloat("alpha", 1.0f);
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, -1.f, -10.0f));
         model = glm::scale(model, glm::vec3(15.0f, 0.5f, 40.0f));
@@ -198,7 +199,7 @@ void Stage::Draw(Shader& shader, int stageNumber) {
         int mapWidth = tileMap[0].size();  // 가로 타일 개수
 
         shader.Use();
-
+        shader.setFloat("alpha", 1.0f);
         for (int z = 0; z < mapHeight; ++z) {
             for (int x = 0; x < mapWidth; ++x) {
                 int tileType = tileMap[z][x];
@@ -224,7 +225,7 @@ void Stage::Draw(Shader& shader, int stageNumber) {
                 else if (tileType == 2) {
                     currentColor = lightTileColor;
                 }
-                else if (tileType == 3) {
+                else if (tileType == 3 ) {
                     currentColor = darkTileColor;
                 }
 
@@ -250,7 +251,7 @@ void Stage::Draw(Shader& shader, int stageNumber) {
         int mapWidth = tileMap[0].size();  // 가로 타일 개수
 
         shader.Use();
-
+        shader.setFloat("alpha", 0.5f);
         for (int z = 0; z < mapHeight; ++z) {
             for (int x = 0; x < mapWidth; ++x) {
                 int tileType = tileMap[z][x];
@@ -276,7 +277,7 @@ void Stage::Draw(Shader& shader, int stageNumber) {
                 else if (tileType == 2) {
                     currentColor = lightTileColor;
                 }
-                else if (tileType == 3) {
+                else if (tileType == 3 || tileType == 6) {
                     currentColor = darkTileColor;
                 }
 

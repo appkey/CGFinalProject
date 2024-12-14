@@ -183,6 +183,17 @@ void Game::Init() {
                     stage3Boundary.push_back(new Obstacle(pos));
 
                 }
+                else if (tileMap[z][x] == 6) {
+                    // 월드 좌표 계산
+                    glm::vec3 pos = glm::vec3(
+                        x * tileSize - (mapWidth / 2) * tileSize,
+                        -0.25f, // 타일의 y 위치(-1.0f) 위에 약간 올려 배치
+                        z * tileSize - (mapHeight / 2) * tileSize +0.f
+                    );
+
+                    // 원형 장애물 생성 (예: 빨간색, 반지름 1.0f)
+                    coins.push_back(new Coin(pos));
+                }
             }
         //첫 번째 줄
         for (int i = 0; i <= 10; ++i) {
@@ -333,7 +344,7 @@ void Game::Render() {
     }
     else if (currentStage == 3 && !lightOn) {
         mainLightPos = glm::vec3(-1.0f, 4.0f, -3.0f); // 중앙 장애물 위치로 조명 위치 변경
-        mainLightColor = glm::vec3(0.1f, 0.1f, 0.1f); // 조명 색상 약하게 설정 (회색)
+        mainLightColor = glm::vec3(0.05f, 0.05f, 0.05f); // 조명 색상 약하게 설정 (회색)
     }
 
     shader->setFloat("alpha", 1.0f);
@@ -354,7 +365,7 @@ void Game::Render() {
         PointLight pl;
         pl.position = coin->GetPosition();
         pl.color = glm::vec3(1.0f, 0.843f, 0.0f); // 금색 빛
-        pl.intensity = 0.5f; // 조명 강도 (필요에 따라 조정)
+        pl.intensity = 0.7f; 
         pointLights.push_back(pl);
     }
 
@@ -371,7 +382,7 @@ void Game::Render() {
         p1.position = character->getPosition();
         p1.position.y += 2.0f;
         p1.color = glm::vec3(1.0f, 1.0f, 1.0f);
-        p1.intensity = 3.0f;
+        p1.intensity = 2.7f;
         pointLights.push_back(p1);
     }
 
@@ -419,20 +430,20 @@ void Game::Render() {
     for (auto& coin : coins) {
         coin->Draw(*coinShader, view, projection);
     }
-
+    shader->Use();
     glDepthMask(GL_FALSE);
-    shader->setFloat("alpha", 0.1f);
     stage->Draw(*shader, currentStage);
     glDepthMask(GL_TRUE);
-    shader->setFloat("alpha", 1.f);
+ 
     
 
 
     // 미니맵 렌더링
     // 미니맵 1
     glViewport(1200, 700, 400, 200);
+  
     shader->Use();
-
+    
     // 직교 투영 행렬 설정
     float orthoWidth = 30.0f; // 맵 가로 크기
     float orthoHeight = 20.0f; // 맵 세로 크기
@@ -446,10 +457,8 @@ void Game::Render() {
     shader->setMat4("view", view);
     shader->setMat4("projection", projection);
 
-    shader->setVec3("emission", glm::vec3(0.0f));
-    shader->setInt("numPointLights", 0);
-
-    
+    shader->setVec3("emission", glm::vec3(0.2f));
+    shader->setInt("numPointLights",pointLights.size());
     character->Draw(*shader);
     for (auto& obs : obstacles) {
         obs->Draw(*shader);
