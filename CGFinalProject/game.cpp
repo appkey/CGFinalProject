@@ -15,7 +15,7 @@ Game::Game() {
     camera = new Camera();
     shader = new Shader("vertex_shader.glsl", "fragment_shader.glsl");
     coinShader = new Shader("coin_vertex_shader.glsl", "coin_fragment_shader.glsl");
-
+    lightOn = false;
     showNormals = false;
     deltaTime = 0.0f;
     lastFrame = 0.0f;
@@ -249,7 +249,8 @@ void Game::Run() {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_MULTISAMPLE);
     //glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK); // Back Face Culling
-
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     Init();
 
     // 콜백 함수 설정
@@ -326,11 +327,16 @@ void Game::Render() {
     glm::vec3 mainLightColor = glm::vec3(1.0f, 1.0f, 1.0f); // 기본 조명 색상 (흰색)
 
     // 스테이지 2일 경우 조명 위치와 색상 변경
-    if (currentStage == 2) {
+    if (currentStage == 2 && !lightOn ) {
+        mainLightPos = glm::vec3(-1.0f, 4.0f, -3.0f); // 중앙 장애물 위치로 조명 위치 변경
+        mainLightColor = glm::vec3(0.1f, 0.1f, 0.1f); // 조명 색상 약하게 설정 (회색)
+    }
+    else if (currentStage == 3 && !lightOn) {
         mainLightPos = glm::vec3(-1.0f, 4.0f, -3.0f); // 중앙 장애물 위치로 조명 위치 변경
         mainLightColor = glm::vec3(0.1f, 0.1f, 0.1f); // 조명 색상 약하게 설정 (회색)
     }
 
+    shader->setFloat("alpha", 1.0f);
     // 주요 광원 유니폼 설정
     shader->setVec3("lightPos", mainLightPos);
     shader->setVec3("lightColor", mainLightColor);
@@ -357,7 +363,15 @@ void Game::Render() {
         p1.position = character->getPosition();
         p1.position.y += 2.0f;
         p1.color = glm::vec3(1.0f, 1.0f, 1.0f);
-        p1.intensity = 0.8;
+        p1.intensity = 0.9f;
+        pointLights.push_back(p1);
+    }
+    else if (instance->currentStage == 3) {
+        PointLight p1;
+        p1.position = character->getPosition();
+        p1.position.y += 2.0f;
+        p1.color = glm::vec3(1.0f, 1.0f, 1.0f);
+        p1.intensity = 3.0f;
         pointLights.push_back(p1);
     }
 
@@ -378,7 +392,10 @@ void Game::Render() {
     shader->setVec3("emission", glm::vec3(0.0f));
 
     // 객체 렌더링
-    stage->Draw(*shader, currentStage);
+    
+    skybox->Draw(view, projection);
+    
+    
     if (camera->mode != FIRST_PERSON) {
         character->Draw(*shader);
     }
@@ -403,7 +420,12 @@ void Game::Render() {
         coin->Draw(*coinShader, view, projection);
     }
 
-    skybox->Draw(view, projection);
+    glDepthMask(GL_FALSE);
+    shader->setFloat("alpha", 0.1f);
+    stage->Draw(*shader, currentStage);
+    glDepthMask(GL_TRUE);
+    shader->setFloat("alpha", 1.f);
+    
 
 
     // 미니맵 렌더링
@@ -427,7 +449,7 @@ void Game::Render() {
     shader->setVec3("emission", glm::vec3(0.0f));
     shader->setInt("numPointLights", 0);
 
-    stage->Draw(*shader, currentStage);
+    
     character->Draw(*shader);
     for (auto& obs : obstacles) {
         obs->Draw(*shader);
@@ -440,7 +462,9 @@ void Game::Render() {
             boundary->Draw(*shader);
         }
     }
-
+   
+    stage->Draw(*shader, currentStage);
+   
 
     // 미니맵 2
     //glViewport(1200, 450, 400, 200); // 미니맵 아래 영역
@@ -519,6 +543,9 @@ void Game::KeyboardDownCallback(unsigned char key, int x, int y) {
     else if (key == 'n' || key == 'N') {
         instance->showNormals = !instance->showNormals;
 
+    }
+    else if (key == 'l' || key == 'L') {
+        instance->lightOn = !instance->lightOn;
     }
     else if (key == 27) { // ESC 키
         exit(0);

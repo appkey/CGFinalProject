@@ -23,7 +23,7 @@ uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform vec3 viewPos;       // 카메라 위치
 uniform vec3 objectColor;   // 객체 색상
 uniform vec3 emission;      // 발광 색상
-
+uniform float alpha;
 uniform bool showNormals;   // 노멀 시각화 여부
 
 void main(){
@@ -78,7 +78,6 @@ void main(){
         
         // 발광 추가
         result += emission;
-        
-        FragColor = vec4(result, 1.0);
+        FragColor = vec4(result, alpha);
     }
 }

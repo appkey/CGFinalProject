@@ -58,7 +58,7 @@ private:
     float lastFrame;
     int lastMouseX, lastMouseY;                                    // 이전 마우스 좌표
     bool leftMouseButtonDown;
-
+    bool lightOn;
     bool keys[256]; // 키 입력 상태
 };
 

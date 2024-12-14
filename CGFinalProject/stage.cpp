@@ -239,11 +239,12 @@ void Stage::Draw(Shader& shader, int stageNumber) {
         glBindVertexArray(0);
     }
     else if (stageNumber == 3) {
+        
         glm::mat4 model;
         float tileSize = 2.0f; // 타일 한 변의 크기
         glm::vec3 greenTileColor = glm::vec3(0.0f, 0.6f, 0.4f); // 밝은 청록색
-        glm::vec3 lightTileColor = glm::vec3(0.8f, 0.8f, 0.6f); // 밝은 베이지색
-        glm::vec3 darkTileColor = glm::vec3(0.3f, 0.3f, 0.4f);
+        glm::vec3 lightTileColor = glm::vec3(0.8f, 0.8f, 0.8f); // 밝은 베이지색
+        glm::vec3 darkTileColor = glm::vec3(0.8f, 0.8f, 0.8f);
 
         int mapHeight = tileMap.size();     // 세로 타일 개수
         int mapWidth = tileMap[0].size();  // 가로 타일 개수
@@ -286,7 +287,7 @@ void Stage::Draw(Shader& shader, int stageNumber) {
                 glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
             }
         }
-
+      
         glBindVertexArray(0);
 
     }
