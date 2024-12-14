@@ -37,7 +37,7 @@ public:
     void Init();
     void UpdateModelMatrix();
     void Draw(Shader& shader);
-    void Update(float deltaTime);
+    void Update(float deltaTime, int stage);
 
 };
 
