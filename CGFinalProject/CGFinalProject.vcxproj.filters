@@ -45,6 +45,12 @@
     <ClCompile Include="coin.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="skybox.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="stb_image.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader.h">
@@ -74,6 +80,12 @@
     <ClInclude Include="point_light.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="skybox.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vertex_shader.glsl">
@@ -86,6 +98,12 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="coin_fragment_shader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="skybox_vertex_shader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="skybox_fragment_shader.glsl">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

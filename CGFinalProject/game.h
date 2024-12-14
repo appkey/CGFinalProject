@@ -6,6 +6,8 @@
 #include "camera.h"
 #include "shader.h"
 #include "obstacle.h"
+#include "skybox.h"
+
 #include "coin.h"
 #include <vector>
 #include "point_light.h"
@@ -21,6 +23,8 @@ public:
     std::vector<Coin*> coins;           // Stage Clear Condition preys.size() == 0이여야함
     std::vector<PointLight> pointLights;
     std::vector<Obstacle*> stage3Boundary;
+    Skybox* skybox;
+
     bool wireframe;
     bool showNormals; // 노멀 시각화 여부
 

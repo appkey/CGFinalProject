@@ -22,6 +22,18 @@ Game::Game() {
     memset(keys, 0, sizeof(keys));
     instance = this;
     wireframe = false;
+    std::vector<std::string> faces
+    {
+        "res/skybox/space_right.jpg",
+        "res/skybox/space_left.jpg",
+        "res/skybox/space_top.jpg",
+        "res/skybox/space_bottom.jpg",
+        "res/skybox/space_front.jpg",
+        "res/skybox/space_back.jpg"
+    };
+    skybox = new Skybox(faces);
+
+
 }
 
 Game::~Game() {
@@ -111,6 +123,7 @@ void Game::Init() {
 void Game::Run() {
 
     glEnable(GL_DEPTH_TEST);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_MULTISAMPLE);
     //glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK); // Back Face Culling
   
@@ -240,6 +253,8 @@ void Game::Render() {
     stage->Draw(*shader, currentStage);
     character->Draw(*shader);
 
+
+
     for (auto& obs : obstacles) {
         obs->Draw(*shader);
     }
@@ -253,6 +268,9 @@ void Game::Render() {
     for (auto& coin : coins) {
         coin->Draw(*coinShader, view, projection);
     }
+
+    skybox->Draw(view, projection);
+
 
     // 미니맵 렌더링
     // 미니맵 1
