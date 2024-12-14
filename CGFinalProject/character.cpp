@@ -155,11 +155,14 @@ void Character::UpdateModelMatrix() {
 void Character::Draw(Shader& shader) {
     UpdateModelMatrix();
     shader.Use();
+    shader.setVec3("emission", glm::vec3(0.4f, 0.0f, 0.0f));
     glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(ModelMatrix));
     glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), color.x, color.y, color.z); // 빨간색
+    
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+    shader.setVec3("emission", glm::vec3(0.f, 0.f, 0.f));
 }
 
 void Character::Move(float deltaTime, bool* keys, const glm::vec3& minBoundary, const glm::vec3& maxBoundary, const glm::vec3& startMin, const glm::vec3& startMax, const glm::vec3& endMin, const glm::vec3& endMax) {

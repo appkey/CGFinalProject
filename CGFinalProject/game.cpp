@@ -151,7 +151,7 @@ void Game::Render() {
     // 스테이지 2일 경우 조명 위치와 색상 변경
     if (currentStage == 2) {
         mainLightPos = glm::vec3(-1.0f, 4.0f, -3.0f); // 중앙 장애물 위치로 조명 위치 변경
-        mainLightColor = glm::vec3(0.3f, 0.3f, 0.3f); // 조명 색상 약하게 설정 (회색)
+        mainLightColor = glm::vec3(0.1f, 0.1f, 0.1f); // 조명 색상 약하게 설정 (회색)
     }
 
     // 주요 광원 유니폼 설정
@@ -179,7 +179,7 @@ void Game::Render() {
         PointLight p1;
         p1.position = character->getPosition();
         p1.color = glm::vec3(1.0f, 1.0f, 1.0f);
-        p1.intensity = 0.6;
+        p1.intensity = 0.8;
         pointLights.push_back(p1);
     }
 
@@ -230,7 +230,6 @@ void Game::Render() {
     shader->setMat4("view", view);
     shader->setMat4("projection", projection);
   
-    // 발광 초기화 및 점광원 비활성화
     shader->setVec3("emission", glm::vec3(0.0f));
     shader->setInt("numPointLights", 0);
 
