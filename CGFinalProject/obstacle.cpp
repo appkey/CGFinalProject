@@ -10,7 +10,7 @@ Obstacle::Obstacle(glm::vec3 pos) {
     Scale = glm::vec3(1.0f);
     Rotation = glm::vec3(0.0f);
     color = glm::vec3(0.0f, 0.0f, 1.0f);
-
+    update_mode = 0;
     if (Position.x > 0.0f) {
         direction = glm::vec3(-1.0f, 0.0f, 0.0f);
     }
@@ -22,6 +22,25 @@ Obstacle::Obstacle(glm::vec3 pos) {
     Init();
     UpdateModelMatrix();
 }
+
+Obstacle::Obstacle(glm::vec3 pos,int update_mode_) {
+    Position = pos + glm::vec3(0.0f, 0.0f, 7.0f);
+    Scale = glm::vec3(1.0f);
+    Rotation = glm::vec3(0.0f);
+    color = glm::vec3(0.0f, 0.0f, 1.0f);
+    update_mode = update_mode_;
+    if (Position.x > 0.0f) {
+        direction = glm::vec3(-1.0f, 0.0f, 0.0f);
+    }
+    else {
+        direction = glm::vec3(1.0f, 0.0f, 0.0f);
+    }
+
+    std::cout << "obstacle construction" << std::endl;
+    Init();
+    UpdateModelMatrix();
+}
+
 
 Obstacle::~Obstacle() {
 
@@ -126,29 +145,33 @@ void Obstacle::Draw(Shader& shader) {
 }
 
 void Obstacle::Update(float deltaTime, int currentStage) {
-    float speed = 3.5f; // 이동 속도
-    float rotationSpeed = 45.0f; // 회전 속도 (도/초)
+    if (update_mode == 0) {
+        float speed = 3.5f; // 이동 속도
+        float rotationSpeed = 45.0f; // 회전 속도 (도/초)
 
-    if (currentStage == 2) {
-        glm::vec3 center = glm::vec3(-1.0f, 0.0f, -1.0f);
-        float rotationAngle = glm::radians(rotationSpeed * deltaTime);
-        // 회전 매트릭스 생성 (y축 기준 회전)
-        glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), rotationAngle, glm::vec3(0.0f, 1.0f, 0.0f));
-        // 장애물의 위치 회전
-        Position = glm::vec3(rotationMatrix * glm::vec4(Position - center, 1.0f)) + center;
-    }
-    else {
-        Position += direction * speed * deltaTime;
-
-        float boundary = 7.0f; 
-        if (Position.x >= boundary) {
-            direction.x = -1.0f;
+        if (currentStage == 2) {
+            glm::vec3 center = glm::vec3(-1.0f, 0.0f, -1.0f);
+            float rotationAngle = glm::radians(rotationSpeed * deltaTime);
+            // 회전 매트릭스 생성 (y축 기준 회전)
+            glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), rotationAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+            // 장애물의 위치 회전
+            Position = glm::vec3(rotationMatrix * glm::vec4(Position - center, 1.0f)) + center;
         }
-        else if (Position.x <= -boundary) {
-            direction.x = 1.0f;
+        else {
+            Position += direction * speed * deltaTime;
+
+            float boundary = 7.0f;
+            if (Position.x >= boundary) {
+                direction.x = -1.0f;
+            }
+            else if (Position.x <= -boundary) {
+                direction.x = 1.0f;
+            }
         }
     }
-
+    else if (update_mode == 1) {
+        ;//여기에 해보세요
+    }
     UpdateModelMatrix();
 }
 

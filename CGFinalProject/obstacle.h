@@ -22,6 +22,8 @@ public:
     glm::mat4 ModelMatrix;
     glm::vec3 color;
     glm::vec3 direction;
+    
+    int update_mode;
 
     GLuint VAO, VBO, EBO, NBO;
     int indexCount;
@@ -33,6 +35,7 @@ public:
 
 
     Obstacle(glm::vec3 pos);
+    Obstacle(glm::vec3 pos, int update_mode);
     ~Obstacle();
     void Init();
     void UpdateModelMatrix();
