@@ -23,6 +23,32 @@ Stage::Stage(int number) {
             {2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2,3, 4, 4, 4, 4}
         };
     }
+    else if (stageNumber == 3) {
+        tileMap = {
+            {4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4},
+            {4,3,2,3,2,3,2,3,2,3,4,3,2,3,2,3,2,3,2,3,4,1,1,2,3,2,4},
+            {4,2,3,2,3,2,3,2,3,2,4,2,3,2,3,2,3,2,3,2,4,1,1,3,2,3,4},
+            {4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,4,4,4,3,2,4},
+            {4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,3,2,3,2,3,4},
+            {4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,2,3,2,3,2,4},
+            {4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,3,2,4,4,4,4},
+            {4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,2,3,2,3,2,4},
+            {4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,3,2,3,2,3,4},
+            {4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,4,4,4,3,2,4},
+            {4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,3,2,3,2,3,4},
+            {4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,2,3,2,3,2,4},
+            {4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,3,2,3,2,3,4},
+            {4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,2,3,4,4,4,4},
+            {4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,3,2,3,2,3,4},
+            {4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,2,3,2,3,2,4},
+            {4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,3,2,3,2,3,4},
+            {4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,2,3,2,3,2,4},
+            {4,2,3,2,3,4,3,2,3,2,4,2,3,2,3,4,3,2,3,2,4,4,4,4,2,3,4},
+            {4,1,1,1,1,4,2,3,2,3,2,3,2,3,2,4,2,3,2,3,3,2,3,2,3,2,4},
+            {4,1,1,1,1,4,3,2,3,2,3,2,3,2,3,4,3,2,3,2,2,3,2,3,2,2,4},
+            { 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4 }
+        };
+    }
 }
 
 Stage::~Stage() {
@@ -165,9 +191,59 @@ void Stage::Draw(Shader& shader, int stageNumber) {
     else if (stageNumber == 2) {
         glm::mat4 model;
         float tileSize = 2.0f; // 타일 한 변의 크기
-        glm::vec3 greenTileColor = glm::vec3(0.0f, 1.0f, 0.0f); // 초록색
-        glm::vec3 lightTileColor = glm::vec3(0.8f, 0.8f, 0.8f); // 밝은 회색
-        glm::vec3 darkTileColor = glm::vec3(0.4f, 0.4f, 0.4f);  // 어두운 회색
+        glm::vec3 greenTileColor = glm::vec3(1.0f, 0.0f, 1.0f); // 밝은 청록색
+        glm::vec3 lightTileColor = glm::vec3(0.7f, 0.5f, 0.3f); // 밝은 베이지색
+            glm::vec3 darkTileColor = glm::vec3(0.3f, 1.0f, 0.3f);
+        int mapHeight = tileMap.size();     // 세로 타일 개수
+        int mapWidth = tileMap[0].size();  // 가로 타일 개수
+
+        shader.Use();
+
+        for (int z = 0; z < mapHeight; ++z) {
+            for (int x = 0; x < mapWidth; ++x) {
+                int tileType = tileMap[z][x];
+
+                // 렌더링하지 않는 타일은 건너뛰기
+                if (tileType == 4) {
+                    continue;
+                }
+
+                model = glm::mat4(1.0f);
+                model = glm::translate(model, glm::vec3(
+                    x * tileSize - (mapWidth / 2) * tileSize,
+                    -1.0f,
+                    z * tileSize - (mapHeight / 2) * tileSize
+                ));
+                model = glm::scale(model, glm::vec3(tileSize, 0.1f, tileSize));
+
+                // 타일 색상 설정
+                glm::vec3 currentColor;
+                if (tileType == 1) {
+                    currentColor = greenTileColor;
+                }
+                else if (tileType == 2) {
+                    currentColor = lightTileColor;
+                }
+                else if (tileType == 3) {
+                    currentColor = darkTileColor;
+                }
+
+                glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+                glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), currentColor.x, currentColor.y, currentColor.z);
+
+                glBindVertexArray(VAO);
+                glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+            }
+        }
+
+        glBindVertexArray(0);
+    }
+    else if (stageNumber == 3) {
+        glm::mat4 model;
+        float tileSize = 2.0f; // 타일 한 변의 크기
+        glm::vec3 greenTileColor = glm::vec3(0.0f, 0.6f, 0.4f); // 밝은 청록색
+        glm::vec3 lightTileColor = glm::vec3(0.8f, 0.8f, 0.6f); // 밝은 베이지색
+        glm::vec3 darkTileColor = glm::vec3(0.3f, 0.3f, 0.4f);
 
         int mapHeight = tileMap.size();     // 세로 타일 개수
         int mapWidth = tileMap[0].size();  // 가로 타일 개수
@@ -212,6 +288,7 @@ void Stage::Draw(Shader& shader, int stageNumber) {
         }
 
         glBindVertexArray(0);
+
     }
 }
 

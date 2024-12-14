@@ -76,6 +76,35 @@ void Game::Init() {
             obstacles.push_back(new Obstacle(glm::vec3(-1.0f + 2.0f * i, 0.0f, -8.0f)));   // 오른쪽
         }
     }
+    else if (currentStage == 3) {
+        character->startPos(3);
+        const std::vector<std::vector<int>>& tileMap = stage->getTilemap();
+
+        float tileSize = 2.0f; // 타일 한 변의 크기 (Stage::Draw와 동일해야 함)
+        int mapHeight = tileMap.size();
+        int mapWidth = tileMap[0].size();
+
+        for (int z = 0; z < mapHeight; ++z) {
+            for (int x = 0; x < mapWidth; ++x) {
+                if (tileMap[z][x] == 4) {
+                    // 월드 좌표 계산
+                    glm::vec3 pos = glm::vec3(
+                         x * tileSize - (mapWidth / 2) * tileSize,
+                        -0.25f, // 타일의 y 위치(-1.0f) 위에 약간 올려 배치
+                        z * tileSize - (mapHeight / 2) * tileSize -7.f
+                    );
+
+                    // 원형 장애물 생성 (예: 빨간색, 반지름 1.0f)
+                   stage3Boundary.push_back(new Obstacle(pos));
+     
+                }
+            }
+        }
+        for (auto& boundary : stage3Boundary) {
+            boundary->SetScale(glm::vec3(1.5f, 1.5f, 1.5f));
+        }
+    }
+    
 
 }
 
@@ -120,6 +149,13 @@ void Game::Update(float deltaTime) {
             }
             else {
                 std::cout << "Collision detected, but character is invincible." << std::endl;
+            }
+        }
+    }
+    if (instance->currentStage == 3) {
+        for (auto& boundary : stage3Boundary) {
+            if (!character->isInvincible && CheckCollisionAABBAndSphere(*character, *boundary)) {
+                character->startPos(currentStage);
             }
         }
     }
@@ -178,6 +214,7 @@ void Game::Render() {
     if (instance->currentStage == 2) {
         PointLight p1;
         p1.position = character->getPosition();
+        p1.position.y += 2.0f;
         p1.color = glm::vec3(1.0f, 1.0f, 1.0f);
         p1.intensity = 0.8;
         pointLights.push_back(p1);
@@ -205,6 +242,11 @@ void Game::Render() {
 
     for (auto& obs : obstacles) {
         obs->Draw(*shader);
+    }
+    if (instance->currentStage == 3) {
+        for (auto& boundary : stage3Boundary) {
+            boundary->Draw(*shader);
+        }
     }
 
     // 코인 렌더링 (발광 설정은 여전히 필요 없으므로 emission을 0으로 유지)
@@ -241,6 +283,12 @@ void Game::Render() {
     for (auto& coin : coins) {
         coin->Draw(*coinShader, view, projection); // 미니맵에서도 코인 전용 셰이더 사용
     }
+    if (currentStage == 3) {
+        for (auto& boundary : stage3Boundary) {
+            boundary->Draw(*shader);
+        }
+    }
+
 
     // 미니맵 2
     //glViewport(1200, 450, 400, 200); // 미니맵 아래 영역
@@ -297,8 +345,14 @@ void Game::KeyboardDownCallback(unsigned char key, int x, int y) {
     else if (key == 'c') {
         instance->SwitchCameraMode();
     }
+    else if (key == '1') {
+        instance->MoveStage(1);
+    }
     else if (key == '2') {
         instance->MoveStage(2);
+    }
+    else if (key == '3') {
+        instance->MoveStage(3);
     }
     else if (key == 'y') {
         instance->wireframe = !instance->wireframe;
@@ -331,7 +385,7 @@ bool Game::CheckCollisionAABBAndSphere(const Character& character, const Obstacl
 
     // 구의 중심 및 반지름
     glm::vec3 sphereCenter = obstacle.Position;
-    float sphereRadius = 0.5f; // 구의 반지름 (필요에 따라 조정)
+    float sphereRadius = 0.5f*obstacle.Scale.x; // 구의 반지름 (필요에 따라 조정)
 
     // AABB의 각 축에서 구의 중심을 투영
     glm::vec3 closestPoint = glm::clamp(sphereCenter, aabbMin, aabbMax);

@@ -39,7 +39,7 @@ public:
     void Draw(Shader& shader);
     void Update(float deltaTime, int stage);
     void SetColor(const glm::vec3& color );
-
+    void SetScale(const glm::vec3& factor);
 };
 
 #endif

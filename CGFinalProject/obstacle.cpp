@@ -156,3 +156,8 @@ void Obstacle::SetColor(const glm::vec3& color_)
 {
     color = color_;
 }
+
+void Obstacle::SetScale(const glm::vec3& factor)
+{
+    Scale = factor;
+}

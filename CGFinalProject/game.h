@@ -20,6 +20,7 @@ public:
     std::vector<Obstacle*> obstacles;
     std::vector<Coin*> coins;           // Stage Clear Condition preys.size() == 0이여야함
     std::vector<PointLight> pointLights;
+    std::vector<Obstacle*> stage3Boundary;
     bool wireframe;
     bool showNormals; // 노멀 시각화 여부
 
