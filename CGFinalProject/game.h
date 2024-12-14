@@ -6,6 +6,7 @@
 #include "camera.h"
 #include "shader.h"
 #include "obstacle.h"
+#include "coin.h"
 #include <vector>
 
 class Game {
@@ -16,6 +17,12 @@ public:
     Camera* camera;
     Shader* shader;
     std::vector<Obstacle*> obstacles;
+    std::vector<Coin*> coins;           // Stage Clear Condition preys.size() == 0이여야함
+
+
+
+
+
 
     Game();
     ~Game();

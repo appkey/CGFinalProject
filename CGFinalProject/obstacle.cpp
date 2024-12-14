@@ -151,3 +151,8 @@ void Obstacle::Update(float deltaTime, int currentStage) {
 
     UpdateModelMatrix();
 }
+
+void Obstacle::SetColor(const glm::vec3& color_)
+{
+    color = color_;
+}

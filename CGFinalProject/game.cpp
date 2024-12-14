@@ -11,7 +11,6 @@ Game::Game() {
     currentStage = 1;
     stage = nullptr;
     character = new Character();
-
     camera = new Camera();
     shader = new Shader("vertex_shader.glsl", "fragment_shader.glsl");
     deltaTime = 0.0f;
@@ -31,19 +30,27 @@ void Game::Init() {
     if (stage != nullptr) delete stage;
     if (character != nullptr) delete character;
 
+
     stage = new Stage(currentStage);
     character = new Character();
 
+    coins.clear();
     obstacles.clear();
+    
 
     if (currentStage == 1) {
         // 스테이지 1의 장애물 설정
+        coins.push_back(new Coin(glm::vec3(-6.0f, 0.0f, 9.5f)));
+        coins.push_back(new Coin(glm::vec3(6.0f, 0.0f, -24.5f)));
         for (int i = 0; i < 10; ++i) {
             obstacles.push_back(new Obstacle(glm::vec3(-4.0f, 0.0f, -4.f * i)));
         }
         for (int i = 0; i < 10; ++i) {
             obstacles.push_back(new Obstacle(glm::vec3(+4.0f, 0.0f, -4.f * i + 1.f)));
+            
         }
+      
+
     }
     else if (currentStage == 2) {
         character->startPos(2);
@@ -51,7 +58,8 @@ void Game::Init() {
 
         // 중앙 장애물
         obstacles.push_back(new Obstacle(glm::vec3(-1.0f, 0.0f, -8.0f)));
-
+        coins.push_back(new Coin(glm::vec3(-8.0, -0.25, -8.0)));
+        coins.push_back(new Coin(glm::vec3(6.0, -0.25, 6.0)));
         // 세로 방향 장애물
         for (int i = 1; i <= 4; ++i) {
             obstacles.push_back(new Obstacle(glm::vec3(-1.0f, 0.0f, -8.0f -2.0f * i)));  // 위쪽
@@ -109,6 +117,9 @@ void Game::Update(float deltaTime) {
             }
         }
     }
+    for (auto& coin : coins) {
+        coin->Update(deltaTime);
+    }
     camera->update(*character);
 
 }
@@ -127,15 +138,19 @@ void Game::Render() {
     glUniformMatrix4fv(glGetUniformLocation(shader->Program, "projection"), 1, GL_FALSE, &projection[0][0]);
 
     // 조명 설정
-    glm::vec3 lightPos = glm::vec3(0.0f, 3.0f, -5.0f);
+    glm::vec3 lightPos = glm::vec3(0.0f, 20.0f, -10.0f);
     glUniform3fv(glGetUniformLocation(shader->Program, "lightPos"), 1, &lightPos[0]);
     glUniform3fv(glGetUniformLocation(shader->Program, "viewPos"), 1, &camera->Position[0]);
 
     stage->Draw(*shader, currentStage);
     character->Draw(*shader);
+   for (auto& coin : coins) {
+        coin->Draw(*shader);
+    }
     for (auto& obs : obstacles) {
         obs->Draw(*shader);
     }
+  
     glViewport(1200, 700, 400, 200);
     shader->Use();
 
@@ -157,6 +172,9 @@ void Game::Render() {
     for (auto& obs : obstacles) {
         obs->Draw(*shader);
     }
+    for (auto& coin : coins) {
+        coin->Draw(*shader);
+    }
 
     glViewport(1200, 450, 400, 200); // 미니맵 아래 영역
     view = glm::lookAt(glm::vec3(0.0f, 0.0f, 30.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -171,7 +189,10 @@ void Game::Render() {
     for (auto& obs : obstacles) {
         obs->Draw(*shader);
     }
-
+   
+    for (auto& coin : coins) {
+        coin->Draw(*shader);
+    }
 
     glutSwapBuffers();
 }

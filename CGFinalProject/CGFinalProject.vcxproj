@@ -132,6 +132,7 @@
   <ItemGroup>
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="character.cpp" />
+    <ClCompile Include="coin.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="model_loader.cpp" />
@@ -142,6 +143,7 @@
   <ItemGroup>
     <ClInclude Include="camera.h" />
     <ClInclude Include="character.h" />
+    <ClInclude Include="coin.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="model_loader.h" />
     <ClInclude Include="obstacle.h" />
