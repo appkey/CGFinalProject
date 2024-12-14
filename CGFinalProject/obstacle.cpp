@@ -11,30 +11,20 @@ Obstacle::Obstacle(glm::vec3 pos) {
     Rotation = glm::vec3(0.0f);
     color = glm::vec3(0.0f, 0.0f, 1.0f);
     update_mode = 0;
-    if (Position.x > 0.0f) {
-        direction = glm::vec3(-1.0f, 0.0f, 0.0f);
-    }
-    else {
-        direction = glm::vec3(1.0f, 0.0f, 0.0f);
-    }
+    direction = Position.x > 0.0f ? glm::vec3(-1.0f, 0.0f, 0.0f) : glm::vec3(1.0f, 0.0f, 0.0f);
 
     std::cout << "obstacle construction" << std::endl;
     Init();
     UpdateModelMatrix();
 }
 
-Obstacle::Obstacle(glm::vec3 pos,int update_mode_) {
+Obstacle::Obstacle(glm::vec3 pos, int update_mode_) {
     Position = pos + glm::vec3(0.0f, 0.0f, 7.0f);
     Scale = glm::vec3(1.0f);
     Rotation = glm::vec3(0.0f);
     color = glm::vec3(0.0f, 0.0f, 1.0f);
     update_mode = update_mode_;
-    if (Position.x > 0.0f) {
-        direction = glm::vec3(-1.0f, 0.0f, 0.0f);
-    }
-    else {
-        direction = glm::vec3(1.0f, 0.0f, 0.0f);
-    }
+    direction = Position.x > 0.0f ? glm::vec3(-1.0f, 0.0f, 0.0f) : glm::vec3(1.0f, 0.0f, 0.0f);
 
     std::cout << "obstacle construction" << std::endl;
     Init();
@@ -137,7 +127,7 @@ void Obstacle::Draw(Shader& shader) {
     UpdateModelMatrix();
     shader.Use();
     glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, &ModelMatrix[0][0]);
-    glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), color.x, color.y, color.z); 
+    glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), color.x, color.y, color.z);
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
@@ -145,9 +135,13 @@ void Obstacle::Draw(Shader& shader) {
 }
 
 void Obstacle::Update(float deltaTime, int currentStage) {
+    float speed = 3.5f; // 이동 속도
+    float rotationSpeed = 45.0f; // 회전 속도 (도/초)
+    float sideLength = 5.0f;
+    static int state = 0;
+    static float elapsedTime = 0.0f;
+
     if (update_mode == 0) {
-        float speed = 3.5f; // 이동 속도
-        float rotationSpeed = 45.0f; // 회전 속도 (도/초)
 
         if (currentStage == 2) {
             glm::vec3 center = glm::vec3(-1.0f, 0.0f, -1.0f);
@@ -170,7 +164,13 @@ void Obstacle::Update(float deltaTime, int currentStage) {
         }
     }
     else if (update_mode == 1) {
-        ;//여기에 해보세요
+
+    }
+    else if (update_mode == 2) {
+        float angle = glm::radians(rotationSpeed * deltaTime);
+        glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::vec3 center = glm::vec3(-11.0f, 0.0f, 1.0f);
+        Position = glm::vec3(rotationMatrix * glm::vec4(Position - center, 1.0f)) + center;
     }
     UpdateModelMatrix();
 }

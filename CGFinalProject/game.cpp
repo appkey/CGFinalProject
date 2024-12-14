@@ -19,8 +19,6 @@ Game::Game() {
     showNormals = false;
     deltaTime = 0.0f;
     lastFrame = 0.0f;
-    mouseOffsetX = 0.0f;
-    mouseOffsetY = 0.0f;
     memset(keys, 0, sizeof(keys));
     instance = this;
     wireframe = false;
@@ -186,27 +184,56 @@ void Game::Init() {
 
                 }
             }
-        }
+        //첫 번째 줄
         for (int i = 0; i <= 10; ++i) {
-            if (i == 0 || i == 1 || i == 2 || i == 4 || i == 5 || i == 6 || i == 8 || i == 9 || i == 10) {
-                glm::vec3 pos = glm::vec3(-21.0f, 0.0f, i * tileSize - 20.0f);
-                Obstacle* movingCube = new Obstacle(pos);
-                obstacles.push_back(movingCube);
+                if (i == 0 || i == 1 || i == 2 || i == 4 || i == 5 || i == 6 || i == 8 || i == 9 || i == 10) {
+                    glm::vec3 pos = glm::vec3(-21.0f, 0.0f, i * tileSize - 20.0f);
+                    Obstacle* movingCube = new Obstacle(pos, -1);
+                    obstacles.push_back(movingCube);
+                }
             }
         }
-
         for (int i = 0; i <= 10; ++i) {
             if (i == 0 || i == 4 || i == 8) {
                 glm::vec3 pos = glm::vec3(-19.0f, 0.0f, i * tileSize - 22.0f);
-                Obstacle* movingCube = new Obstacle(pos);
+                Obstacle* movingCube = new Obstacle(pos,1);
                 obstacles.push_back(movingCube);
             }
         }
-
+        //두 번째 줄
+        for (int i = 0; i <= 16; ++i) {
+            if (i == 0 || i == 2 || i == 4 || i == 6 || i == 8 || i == 10 || i == 12 || i == 14 || i == 16) {
+                glm::vec3 pos = glm::vec3(-11.0f, 0.0f, i * tileSize - 22.0f);
+                Obstacle* movingCube = new Obstacle(pos, 2);
+                obstacles.push_back(movingCube);
+            }
+        }
+        //세 번째 줄
+        for (int i = 0; i <= 15; ++i) {
+            if (i == 0 || i == 3 || i == 6 || i == 9 || i == 12) {
+                glm::vec3 pos = glm::vec3(-4.0f, 0.0f, i * tileSize - 21.0f);
+                Obstacle* movingCube = new Obstacle(pos, 3);
+                obstacles.push_back(movingCube);
+            }
+        }
+        for (int i = 0; i <= 15; ++i) {
+            if (i == 0 || i == 3 || i == 6 || i == 9 || i == 12) {
+                glm::vec3 pos = glm::vec3(-2.0f, 0.0f, i * tileSize - 21.0f);
+                Obstacle* movingCube = new Obstacle(pos, 3);
+                obstacles.push_back(movingCube);
+            }
+        }
         for (int i = 0; i <= 15; ++i) {
             if (i == 0 || i == 3 || i == 6 || i == 9 || i == 12 || i == 15) {
-                glm::vec3 pos = glm::vec3(-11.0f, 0.0f, i * tileSize - 22.0f);
-                Obstacle* movingCube = new Obstacle(pos);
+                glm::vec3 pos = glm::vec3(0.0f, 0.0f, i * tileSize - 24.0f);
+                Obstacle* movingCube = new Obstacle(pos, 4);
+                obstacles.push_back(movingCube);
+            }
+        }
+        for (int i = 0; i <= 15; ++i) {
+            if (i == 0 || i == 3 || i == 6 || i == 9 || i == 12 || i == 15) {
+                glm::vec3 pos = glm::vec3(2.0f, 0.0f, i * tileSize - 24.0f);
+                Obstacle* movingCube = new Obstacle(pos, 4);
                 obstacles.push_back(movingCube);
             }
         }
@@ -214,8 +241,6 @@ void Game::Init() {
             boundary->SetScale(glm::vec3(1.5f, 1.5f, 1.5f));
         }
     }
-
-
 }
 
 void Game::Run() {
@@ -233,13 +258,15 @@ void Game::Run() {
     glutKeyboardFunc(KeyboardDownCallback);
     glutKeyboardUpFunc(KeyboardUpCallback);
     glutReshapeFunc(ReshapeCallback);
-    glutPassiveMotionFunc(PassiveMotionCallback); 
+    glutMouseFunc(MouseCallback);  // 마우스 클릭 콜백
+    glutMotionFunc(MotionCallback); // 마우스 이동 콜백
+    glutPassiveMotionFunc(PassiveMotionCallback);
     glutSetCursor(GLUT_CURSOR_NONE); // 커서 가리기
     glutMainLoop();
 }
 
 void Game::Update(float deltaTime) {
-
+   
     if (camera->mode == FIRST_PERSON || camera->mode == THIRD_PERSON) {
         character->Move(deltaTime, keys, *camera);
     }
@@ -276,7 +303,7 @@ void Game::Update(float deltaTime) {
     for (auto& coin : coins) {
         coin->Update(deltaTime);
     }
-    camera->update(*character,deltaTime,mouseOffsetX,mouseOffsetY);
+    camera->update(*character, deltaTime, mouseOffsetX, mouseOffsetY);
 
 }
 void Game::Render() {
@@ -471,7 +498,6 @@ void Game::KeyboardDownCallback(unsigned char key, int x, int y) {
     }
     else if (key == 'c') {
         instance->SwitchCameraMode();
-        std::cout << instance->camera->mode << std::endl;
     }
     else if (key == '1') {
         instance->MoveStage(1);
@@ -526,6 +552,8 @@ bool Game::CheckCollisionAABBAndSphere(const Character& character, const Obstacl
     return distance <= sphereRadius;
 
 }
+
+
 void Game::CenterMouse() {
     int centerX = glutGet(GLUT_WINDOW_WIDTH) / 2;
     int centerY = glutGet(GLUT_WINDOW_HEIGHT) / 2;
