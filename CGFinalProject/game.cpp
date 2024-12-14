@@ -24,12 +24,12 @@ Game::Game() {
     wireframe = false;
     std::vector<std::string> faces
     {
-        "res/skybox/space_right.jpg",
-        "res/skybox/space_left.jpg",
-        "res/skybox/space_top.jpg",
-        "res/skybox/space_bottom.jpg",
-        "res/skybox/space_front.jpg",
-        "res/skybox/space_back.jpg"
+        "res/skybox/1-1.jpg",
+        "res/skybox/1-2.jpg",
+        "res/skybox/1-3.jpg",
+        "res/skybox/1-4.jpg",
+        "res/skybox/1-5.jpg",
+        "res/skybox/1-6.jpg"
     };
     skybox = new Skybox(faces);
 
@@ -46,15 +46,29 @@ Game::~Game() {
 void Game::Init() {
     if (stage != nullptr) delete stage;
     if (character != nullptr) delete character;
-  
+    if (skybox != nullptr) delete skybox;
     stage = new Stage(currentStage);
     character = new Character();
+    
+  
+
 
     coins.clear();
     obstacles.clear();
     stage1Boundary.clear();
 
     if (currentStage == 1) {
+        std::vector<std::string> faces
+        {
+            "res/skybox/1-1.jpg",
+            "res/skybox/1-2.jpg",
+            "res/skybox/1-3.jpg",
+            "res/skybox/1-4.jpg",
+            "res/skybox/1-5.jpg",
+            "res/skybox/1-6.jpg"
+        };
+        skybox = new Skybox(faces);
+
         // 스테이지 1의 장애물 설정
         float boundaryX = 8.0f;  // 스테이지 X 경계
         float boundaryZ = 30.0f;  // 스테이지 Z 경계
@@ -100,9 +114,22 @@ void Game::Init() {
         }
     }
     else if (currentStage == 2) {
+
+        std::vector<std::string> faces
+        {
+            "res/skybox/2-1.jpg",
+            "res/skybox/2-2.jpg",
+            "res/skybox/2-3.jpg",
+            "res/skybox/2-4.jpg",
+            "res/skybox/2-5.jpg",
+            "res/skybox/2-6.jpg"
+        };
+        skybox = new Skybox(faces);
+
+
+
         character->startPos(2);
         // 스테이지 2의 초기화 로직 추가
-
         // 중앙 장애물
         obstacles.push_back(new Obstacle(glm::vec3(-1.0f, 0.0f, -8.0f)));
         coins.push_back(new Coin(glm::vec3(-8.0, -0.25, -8.0)));
@@ -121,6 +148,21 @@ void Game::Init() {
     }
     else if (currentStage == 3) {
         character->startPos(3);
+
+
+        std::vector<std::string> faces
+        {
+            "res/skybox/3-1.png",
+            "res/skybox/3-2.png",
+            "res/skybox/3-3.png",
+            "res/skybox/3-4.png",
+            "res/skybox/3-5.png",
+            "res/skybox/3-6.png"
+        };
+        skybox = new Skybox(faces);
+
+
+
         const std::vector<std::vector<int>>& tileMap = stage->getTilemap();
 
         float tileSize = 2.0f; // 타일 한 변의 크기 (Stage::Draw와 동일해야 함)

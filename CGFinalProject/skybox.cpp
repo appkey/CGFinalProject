@@ -119,19 +119,14 @@ void Skybox::InitRenderData() {
 
 // 스카이박스 렌더링 함수
 void Skybox::Draw(const glm::mat4& view, const glm::mat4& projection) {
-    // 깊이 함수 변경: 깊이 버퍼의 값과 같을 때도 통과
     glDepthFunc(GL_LEQUAL);
     skyboxShader->Use();
 
     // 뷰 행렬에서 위치 정보 제거
     glm::mat4 viewNoTranslation = glm::mat4(glm::mat3(view));
 
-    // 모델 매트릭스 (스케일 조정, 필요 시 활성화)
-    glm::mat4 model = glm::mat4(1.0f);
-    float scaleFactor = 10.0f; // 원하는 스케일로 조정 (예: 0.5f)
-    model = glm::scale(model, glm::vec3(scaleFactor));
-
-    skyboxShader->setMat4("view", viewNoTranslation * model);
+    // 스케일링 제거
+    skyboxShader->setMat4("view", viewNoTranslation);
     skyboxShader->setMat4("projection", projection);
 
     // 스카이박스 큐브 렌더링
@@ -142,6 +137,5 @@ void Skybox::Draw(const glm::mat4& view, const glm::mat4& projection) {
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
 
-    // 깊이 함수 원래대로 복구
     glDepthFunc(GL_LESS);
 }
