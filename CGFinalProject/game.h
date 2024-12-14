@@ -20,13 +20,14 @@ public:
     Shader* shader;
     Shader* coinShader;
     std::vector<Obstacle*> obstacles;
-    std::vector<Coin*> coins;           // Stage Clear Condition preys.size() == 0ÀÌ¿©¾ßÇÔ
+    std::vector<Coin*> coins;           // Stage Clear Condition preys.size() == 0ì´ì—¬ì•¼í•¨
     std::vector<PointLight> pointLights;
+    std::vector<Obstacle*>stage1Boundary;
     std::vector<Obstacle*> stage3Boundary;
     Skybox* skybox;
 
     bool wireframe;
-    bool showNormals; // ³ë¸Ö ½Ã°¢È­ ¿©ºÎ
+    bool showNormals; // ë…¸ë©€ ì‹œê°í™” ì—¬ë¶€
 
 
 
@@ -42,7 +43,7 @@ public:
 
 
 
-    // Äİ¹é ÇÔ¼öµé
+    // ì½œë°± í•¨ìˆ˜ë“¤
     static void DisplayCallback();
     static void KeyboardDownCallback(unsigned char key, int x, int y);
     static void KeyboardUpCallback(unsigned char key, int x, int y);
@@ -52,7 +53,7 @@ private:
     static Game* instance;
     float deltaTime;
     float lastFrame;
-    bool keys[256]; // Å° ÀÔ·Â »óÅÂ
-};  
+    bool keys[256]; // í‚¤ ì…ë ¥ ìƒíƒœ
+};
 
 #endif
