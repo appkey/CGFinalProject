@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include "camera.h"
 
 Character::Character() : isInvincible(false) {
     Position = glm::vec3(0.0f, -0.25f, 13.5f);
@@ -166,24 +167,67 @@ void Character::Draw(Shader& shader) {
     //shader.setVec3("emission", glm::vec3(0.f, 0.f, 0.f));
 }
 
-void Character::Move(float deltaTime, bool* keys, const glm::vec3& minBoundary, const glm::vec3& maxBoundary, const glm::vec3& startMin, const glm::vec3& startMax, const glm::vec3& endMin, const glm::vec3& endMax) {
+void Character::Move(float deltaTime, bool* keys) {
     float speed = 5.0f;
     glm::vec3 newPosition = Position;
 
+    // 방향 계산을 위한 이동 벡터
+    glm::vec3 movement(0.0f);
+
     if (keys['w']) {
-        newPosition.z -= speed * deltaTime;
+        movement.z -= speed * deltaTime;
     }
     if (keys['s']) {
-        newPosition.z += speed * deltaTime;
+        movement.z += speed * deltaTime;
     }
     if (keys['a']) {
-        newPosition.x -= speed * deltaTime;
+        movement.x -= speed * deltaTime;
     }
     if (keys['d']) {
-        newPosition.x += speed * deltaTime;
+        movement.x += speed * deltaTime;
     }
-
+    
+    // 이동 벡터가 0이 아닐 때 방향 벡터 업데이트
+    if (glm::length(movement) > 0.0f) {
+        direction = glm::normalize(movement); // 정규화된 방향 벡터 계산
+    }
+   
+    // 위치 업데이트
+    movement.y = 0.f;
+    newPosition += movement;
     Position = newPosition;
 
     UpdateModelMatrix();
+}
+
+
+void Character::Move(float deltaTime, bool* keys, Camera& camera) {
+    float speed = 5.0f * deltaTime; // 이동 속도
+    glm::vec3 movement(0.0f);
+
+    // 카메라 방향 벡터
+    glm::vec3 forward = camera.GetForwardVector();
+    glm::vec3 right = camera.GetRightVector();
+
+    // 키 입력 처리
+    if (keys['w']) {
+        movement += forward; // 전방 이동
+    }
+    if (keys['s']) {
+        movement -= forward; // 후방 이동
+    }
+    if (keys['a']) {
+        movement -= right; // 좌측 이동
+    }
+    if (keys['d']) {
+        movement += right; // 우측 이동
+    }
+
+    // 이동 벡터가 0이 아닐 경우 정규화
+    if (glm::length(movement) > 0.0f) {
+        movement = glm::normalize(movement) * speed;
+    }
+
+    // 위치 업데이트
+    Position += movement;
 }

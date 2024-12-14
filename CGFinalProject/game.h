@@ -29,7 +29,8 @@ public:
     bool wireframe;
     bool showNormals; // 노멀 시각화 여부
 
-
+    float mouseOffsetX;
+    float mouseOffsetY;
 
     Game();
     ~Game();
@@ -48,11 +49,15 @@ public:
     static void KeyboardDownCallback(unsigned char key, int x, int y);
     static void KeyboardUpCallback(unsigned char key, int x, int y);
     static void ReshapeCallback(int width, int height);
-
+    static void MouseCallback(int button, int state, int x, int y); // 마우스 클릭 콜백
+    static void MotionCallback(int x, int y);
 private:
     static Game* instance;
     float deltaTime;
     float lastFrame;
+    int lastMouseX, lastMouseY;                                    // 이전 마우스 좌표
+    bool leftMouseButtonDown;
+
     bool keys[256]; // 키 입력 상태
 };
 

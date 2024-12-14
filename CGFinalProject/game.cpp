@@ -19,6 +19,8 @@ Game::Game() {
     showNormals = false;
     deltaTime = 0.0f;
     lastFrame = 0.0f;
+    mouseOffsetX = 0.0f;
+    mouseOffsetY = 0.0f;
     memset(keys, 0, sizeof(keys));
     instance = this;
     wireframe = false;
@@ -231,7 +233,8 @@ void Game::Run() {
     glutKeyboardFunc(KeyboardDownCallback);
     glutKeyboardUpFunc(KeyboardUpCallback);
     glutReshapeFunc(ReshapeCallback);
-
+    glutMouseFunc(MouseCallback);  // 마우스 클릭 콜백
+    glutMotionFunc(MotionCallback); // 마우스 이동 콜백
     glutMainLoop();
 }
 
@@ -245,7 +248,12 @@ void Game::Update(float deltaTime) {
     glm::vec3 endMin(-2.0f, -1.0f, -34.0f);
     glm::vec3 endMax(2.0f, 1.0f, -29.0f);
 
-    character->Move(deltaTime, keys, minBoundary, maxBoundary, startMin, startMax, endMin, endMax);
+
+    if (camera->mode == FIRST_PERSON) {
+        character->Move(deltaTime, keys, *camera);
+    }
+    else
+        character->Move(deltaTime, keys);
     stage->Update(deltaTime);
     for (auto& obstacle : obstacles) {
         obstacle->Update(deltaTime, currentStage);
@@ -277,7 +285,7 @@ void Game::Update(float deltaTime) {
     for (auto& coin : coins) {
         coin->Update(deltaTime);
     }
-    camera->update(*character);
+    camera->update(*character,deltaTime,mouseOffsetX,mouseOffsetY);
 
 }
 void Game::Render() {
@@ -353,7 +361,9 @@ void Game::Render() {
 
     // 객체 렌더링
     stage->Draw(*shader, currentStage);
-    character->Draw(*shader);
+    if (camera->mode != FIRST_PERSON) {
+        character->Draw(*shader);
+    }
 
 
 
@@ -468,6 +478,7 @@ void Game::KeyboardDownCallback(unsigned char key, int x, int y) {
     }
     else if (key == 'c') {
         instance->SwitchCameraMode();
+        std::cout << instance->camera->mode << std::endl;
     }
     else if (key == '1') {
         instance->MoveStage(1);
@@ -521,4 +532,40 @@ bool Game::CheckCollisionAABBAndSphere(const Character& character, const Obstacl
     // 충돌 여부 확인
     return distance <= sphereRadius;
 
+}
+
+void Game::MouseCallback(int button, int state, int x, int y) {
+    if (button == GLUT_LEFT_BUTTON) {
+        instance->leftMouseButtonDown = (state == GLUT_DOWN);
+        instance->lastMouseX = x;
+        instance->lastMouseY = y;
+    }
+}
+
+void Game::MotionCallback(int x, int y) {
+    if (instance->leftMouseButtonDown) {
+        // 마우스 이동량 계산
+        float deltaX = x - instance->lastMouseX;
+        float deltaY = y - instance->lastMouseY;
+
+        // 민감도 조정
+        float sensitivity = 0.1f;
+        deltaX *= sensitivity;
+        deltaY *= sensitivity;
+
+        // 카메라 회전
+        instance->camera->Yaw += deltaX;
+        instance->camera->Pitch -= deltaY;
+
+        // Pitch 제한 (카메라가 수직 방향으로 완전히 돌아가는 것을 방지)
+        if (instance->camera->Pitch > 89.0f) instance->camera->Pitch = 89.0f;
+        if (instance->camera->Pitch < -89.0f) instance->camera->Pitch = -89.0f;
+
+        // 새로운 마우스 위치 업데이트
+        instance->lastMouseX = x;
+        instance->lastMouseY = y;
+
+        std::cout << "Camera Yaw: " << instance->camera->Yaw
+            << ", Pitch: " << instance->camera->Pitch << std::endl;
+    }
 }

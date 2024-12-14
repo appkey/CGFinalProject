@@ -18,12 +18,21 @@ public:
     glm::vec3 Target;
     glm::vec3 Up;
 
+    float Yaw;
+    float Pitch;
+    float MouseSensitivity;
+
     CameraMode mode;
 
     Camera();
     glm::mat4 GetViewMatrix();
     void SwitchMode();
-    void update(Character& character);
+    void SetFirstPerson();
+    void SetThirdPerson();
+    void SetTopView();
+    void update(Character& character, float deltaTime, float mouseOffsetX, float mouseOffsetY);
+    glm::vec3 GetForwardVector() const;
+    glm::vec3 GetRightVector() const;
 };
 
 #endif
