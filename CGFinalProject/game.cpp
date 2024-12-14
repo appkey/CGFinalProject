@@ -182,6 +182,27 @@ void Game::Init() {
                     // 원형 장애물 생성 (예: 빨간색, 반지름 1.0f)
                     stage3Boundary.push_back(new Obstacle(pos));
 
+                } else if (tileMap[z][x] == 6) {
+                    // 월드 좌표 계산
+                    glm::vec3 pos = glm::vec3(
+                        x * tileSize - (mapWidth / 2) * tileSize,
+                        -0.25f, // 타일의 y 위치(-1.0f) 위에 약간 올려 배치
+                        z * tileSize - (mapHeight / 2) * tileSize +0.f
+                    );
+
+                    // 원형 장애물 생성 (예: 빨간색, 반지름 1.0f)
+                    coins.push_back(new Coin(pos));
+                }
+                else if (tileMap[z][x] == 6) {
+                    // 월드 좌표 계산
+                    glm::vec3 pos = glm::vec3(
+                        x * tileSize - (mapWidth / 2) * tileSize,
+                        -0.25f, // 타일의 y 위치(-1.0f) 위에 약간 올려 배치
+                        z * tileSize - (mapHeight / 2) * tileSize + 0.f
+                    );
+
+                    // 원형 장애물 생성 (예: 빨간색, 반지름 1.0f)
+                    coins.push_back(new Coin(pos));
                 }
                 else if (tileMap[z][x] == 6) {
                     // 월드 좌표 계산
@@ -197,6 +218,9 @@ void Game::Init() {
             }
         //첫 번째 줄
         for (int i = 0; i <= 10; ++i) {
+            }
+            //첫 번째 줄
+            for (int i = 0; i <= 10; ++i) {
                 if (i == 0 || i == 1 || i == 2 || i == 4 || i == 5 || i == 6 || i == 8 || i == 9 || i == 10) {
                     glm::vec3 pos = glm::vec3(-21.0f, 0.0f, i * tileSize - 20.0f);
                     Obstacle* movingCube = new Obstacle(pos, -1);
@@ -207,7 +231,7 @@ void Game::Init() {
         for (int i = 0; i <= 10; ++i) {
             if (i == 0 || i == 4 || i == 8) {
                 glm::vec3 pos = glm::vec3(-19.0f, 0.0f, i * tileSize - 22.0f);
-                Obstacle* movingCube = new Obstacle(pos,1);
+                Obstacle* movingCube = new Obstacle(pos, 1);
                 obstacles.push_back(movingCube);
             }
         }
@@ -248,6 +272,35 @@ void Game::Init() {
                 obstacles.push_back(movingCube);
             }
         }
+        //네 번째 줄
+        for (int i = 0; i <= 15; ++i) {
+            if (i == 0 || i == 3 || i == 6 || i == 9 || i == 12 || i == 15) {
+                glm::vec3 pos = glm::vec3(12.0f, 0.0f, i * tileSize - 24.0f);
+                Obstacle* movingCube = new Obstacle(pos, 5);
+                obstacles.push_back(movingCube);
+            }
+        }
+        for (int i = 0; i <= 15; ++i) {
+            if (i == 0 || i == 3 || i == 6 || i == 9 || i == 12 || i == 15) {
+                glm::vec3 pos = glm::vec3(10.0f, 0.0f, i * tileSize - 24.0f);
+                Obstacle* movingCube = new Obstacle(pos, 6);
+                obstacles.push_back(movingCube);
+            }
+        }
+        for (int i = 0; i <= 15; ++i) {
+            if (i == 0 || i == 3 || i == 6 || i == 9 || i == 12 || i == 15) {
+                glm::vec3 pos = glm::vec3(8.0f, 0.0f, i * tileSize - 24.0f);
+                Obstacle* movingCube = new Obstacle(pos, 5);
+                obstacles.push_back(movingCube);
+            }
+        }
+        for (int i = 0; i <= 15; ++i) {
+            if (i == 0 || i == 3 || i == 6 || i == 9 || i == 12 || i == 15) {
+                glm::vec3 pos = glm::vec3(6.0f, 0.0f, i * tileSize - 24.0f);
+                Obstacle* movingCube = new Obstacle(pos, -1);
+                obstacles.push_back(movingCube);
+            }
+        }
         for (auto& boundary : stage3Boundary) {
             boundary->SetScale(glm::vec3(1.5f, 1.5f, 1.5f));
         }
@@ -278,7 +331,7 @@ void Game::Run() {
 }
 
 void Game::Update(float deltaTime) {
-   
+
     if (camera->mode == FIRST_PERSON || camera->mode == THIRD_PERSON) {
         character->Move(deltaTime, keys, *camera);
     }
@@ -338,7 +391,7 @@ void Game::Render() {
     glm::vec3 mainLightColor = glm::vec3(1.0f, 1.0f, 1.0f); // 기본 조명 색상 (흰색)
 
     // 스테이지 2일 경우 조명 위치와 색상 변경
-    if (currentStage == 2 && !lightOn ) {
+    if (currentStage == 2 && !lightOn) {
         mainLightPos = glm::vec3(-1.0f, 4.0f, -3.0f); // 중앙 장애물 위치로 조명 위치 변경
         mainLightColor = glm::vec3(0.1f, 0.1f, 0.1f); // 조명 색상 약하게 설정 (회색)
     }
@@ -403,10 +456,10 @@ void Game::Render() {
     shader->setVec3("emission", glm::vec3(0.0f));
 
     // 객체 렌더링
-    
+
     skybox->Draw(view, projection);
-    
-    
+
+
     if (camera->mode != FIRST_PERSON) {
         character->Draw(*shader);
     }
@@ -434,7 +487,7 @@ void Game::Render() {
     glDepthMask(GL_FALSE);
     stage->Draw(*shader, currentStage);
     glDepthMask(GL_TRUE);
- 
+    
     
 
 
@@ -457,8 +510,8 @@ void Game::Render() {
     shader->setMat4("view", view);
     shader->setMat4("projection", projection);
 
-    shader->setVec3("emission", glm::vec3(0.2f));
-    shader->setInt("numPointLights",pointLights.size());
+    shader->setVec3("emission", glm::vec3(0.0f));
+    shader->setInt("numPointLights", pointLights.size());
     character->Draw(*shader);
     for (auto& obs : obstacles) {
         obs->Draw(*shader);
@@ -471,9 +524,9 @@ void Game::Render() {
             boundary->Draw(*shader);
         }
     }
-   
+
     stage->Draw(*shader, currentStage);
-   
+
 
     // 미니맵 2
     //glViewport(1200, 450, 400, 200); // 미니맵 아래 영역

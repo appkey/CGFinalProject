@@ -140,6 +140,9 @@ void Obstacle::Update(float deltaTime, int currentStage) {
     float sideLength = 5.0f;
     static int state = 0;
     static float elapsedTime = 0.0f;
+    static float zOffset = 0.0f;
+    static bool movingUp = true;
+
 
     if (update_mode == 0) {
 
@@ -167,32 +170,32 @@ void Obstacle::Update(float deltaTime, int currentStage) {
         float xLength = 4.0f; // x축 이동 범위
         float zLength = 8.0f; // z축 이동 범위
 
-       
+
         float speed = 3.5f;
 
-       
-        if (state == 0) { 
+
+        if (state == 0) {
             Position.x -= speed * deltaTime;
             if (Position.x <= StartPostion.x - xLength) {
-                state = 1; 
+                state = 1;
             }
         }
         else if (state == 1) {
             Position.z += speed * deltaTime;
             if (Position.z >= StartPostion.z + zLength) {
-                state = 2; 
+                state = 2;
             }
         }
         else if (state == 2) {
             Position.x += speed * deltaTime;
             if (Position.x >= StartPostion.x) {
-                state = 3; 
+                state = 3;
             }
         }
-        else if (state == 3) { 
+        else if (state == 3) {
             Position.z -= speed * deltaTime;
             if (Position.z <= StartPostion.z) {
-                state = 0; 
+                state = 0;
             }
         }
     }
@@ -201,6 +204,28 @@ void Obstacle::Update(float deltaTime, int currentStage) {
         glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
         glm::vec3 center = glm::vec3(-11.0f, 0.0f, 1.0f);
         Position = glm::vec3(rotationMatrix * glm::vec4(Position - center, 1.0f)) + center;
+    }
+    else  if (update_mode == 5) {
+        if (movingUp) {
+            zOffset += 1.0f * deltaTime;
+            if (zOffset >= 4.0f) movingUp = false;
+        }
+        else {
+            zOffset -= 1.0f * deltaTime;
+            if (zOffset <= -2.0f) movingUp = true;
+        }
+        Position.z = StartPostion.z + zOffset;
+    }
+    else if (update_mode == 6) {
+        if (!movingUp) {
+            zOffset += 1.0f * deltaTime;
+            if (zOffset >= 4.0f) movingUp = true;
+        }
+        else {
+            zOffset -= 1.0f * deltaTime;
+            if (zOffset <= -2.0f) movingUp = false;
+        }
+        Position.z = StartPostion.z - zOffset;
     }
     UpdateModelMatrix();
 }
