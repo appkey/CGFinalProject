@@ -6,6 +6,7 @@
 #include <cstring> // memset을 위한 헤더
 #include <iostream>
 
+
 Game* Game::instance = nullptr;
 
 Game::Game() {
@@ -18,6 +19,7 @@ Game::Game() {
     lightOn = false;
     showNormals = false;
     deltaTime = 0.0f;
+    stopMouse = false;
     lastFrame = 0.0f;
     memset(keys, 0, sizeof(keys));
     instance = this;
@@ -659,7 +661,7 @@ void Game::KeyboardDownCallback(unsigned char key, int x, int y) {
     instance->keys[key] = true;
     if (key == 'i') {
         instance->character->ToggleInvincibility();
-    }  else if (key == 'c') {
+    }  else if (key == 'c' || key=='C') {
         instance->SwitchCameraMode();
     } else if (key == '1') {
         instance->MoveStage(1);
@@ -667,7 +669,7 @@ void Game::KeyboardDownCallback(unsigned char key, int x, int y) {
         instance->MoveStage(2);
     } else if (key == '3') {
         instance->MoveStage(3);
-    }  else if (key == 'y') {
+    }  else if (key == 'y' || key =='Y') {
         instance->wireframe = !instance->wireframe;
         if (instance->wireframe)
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -678,7 +680,14 @@ void Game::KeyboardDownCallback(unsigned char key, int x, int y) {
         instance->showNormals = !instance->showNormals;
     } else if (key == 'l' || key == 'L') {
         instance->lightOn = !instance->lightOn;
-    } else if (key == 27) { // ESC 키
+    }  else if(key == 'm') {
+        instance->stopMouse = !instance->stopMouse;
+        if (instance-> stopMouse) 
+            glutSetCursor(GLUT_CURSOR_INHERIT);
+          else 
+            glutSetCursor(GLUT_CURSOR_NONE);
+       
+    }  else if (key == 27) { // ESC 키
         exit(0);
     }
 }
@@ -708,6 +717,7 @@ bool Game::CheckCollisionAABBAndSphere(const Character& character, const Obstacl
 
 
 void Game::CenterMouse() { // 마우스 중심으로 옮겨 마우스 나가는거 방지 
+    if (instance->stopMouse) return;
     int centerX = glutGet(GLUT_WINDOW_WIDTH) / 2;
     int centerY = glutGet(GLUT_WINDOW_HEIGHT) / 2;
 
@@ -732,6 +742,7 @@ bool Game::CheckGoalArea()  // 캐릭터 목표 지점 도달 확인
 }
 
  void Game::MouseCallback(int button, int state, int x, int y) {
+     if (instance->stopMouse) return;
         if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
             int viewport[4];
             glGetIntegerv(GL_VIEWPORT, viewport);
@@ -752,6 +763,7 @@ bool Game::CheckGoalArea()  // 캐릭터 목표 지점 도달 확인
 }
 
 void Game::MotionCallback(int x, int y) {
+    if (instance->stopMouse) return;
     int centerX = glutGet(GLUT_WINDOW_WIDTH) / 2;
     int centerY = glutGet(GLUT_WINDOW_HEIGHT) / 2;
 
@@ -778,6 +790,7 @@ void Game::MotionCallback(int x, int y) {
 
 
 void Game::PassiveMotionCallback(int x, int y) {
+    if (instance->stopMouse) return;
     int centerX = glutGet(GLUT_WINDOW_WIDTH) / 2;
     int centerY = glutGet(GLUT_WINDOW_HEIGHT) / 2;
 

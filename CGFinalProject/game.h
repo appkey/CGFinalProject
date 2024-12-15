@@ -7,7 +7,6 @@
 #include "shader.h"
 #include "obstacle.h"
 #include "skybox.h"
-
 #include "coin.h"
 #include <vector>
 #include "point_light.h"
@@ -30,6 +29,8 @@ public:
 
     bool wireframe;
     bool showNormals; // 노멀 시각화 여부
+
+    bool stopMouse;
 
     float mouseOffsetX;
     float mouseOffsetY;
