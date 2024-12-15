@@ -479,138 +479,140 @@ void Game::Render() {
             pl.color = glm::vec3(1.0f, 0.843f, 0.0f); // 금색 빛
             pl.intensity = 0.7f;
             pointLights.push_back(pl);
-    }
+        }
 
-    if (instance->currentStage == 2) {
-        PointLight p1;
-        p1.position = character->getPosition();
-        p1.position.y += 2.0f;
-        p1.color = glm::vec3(1.0f, 1.0f, 1.0f);
-        p1.intensity = 0.9f;
-        pointLights.push_back(p1);
-    }
-    else if (instance->currentStage == 3) {
-        PointLight p1;
-        p1.position = character->getPosition();
-        p1.position.y += 2.0f;
-        p1.color = glm::vec3(1.0f, 1.0f, 1.0f);
-        p1.intensity = 2.7f;
-        pointLights.push_back(p1);
-    }
+        if (instance->currentStage == 2) {
+            PointLight p1;
+            p1.position = character->getPosition();
+            p1.position.y += 2.0f;
+            p1.color = glm::vec3(1.0f, 1.0f, 1.0f);
+            p1.intensity = 0.9f;
+            pointLights.push_back(p1);
+        }
+        else if (instance->currentStage == 3) {
+            PointLight p1;
+            p1.position = character->getPosition();
+            p1.position.y += 2.0f;
+            p1.color = glm::vec3(1.0f, 1.0f, 1.0f);
+            p1.intensity = 2.7f;
+            pointLights.push_back(p1);
+        }
 
-    // 점광원 유니폼 설정
-    int activePointLights = static_cast<int>(pointLights.size());
-    if (activePointLights > MAX_POINT_LIGHTS) {
-        activePointLights = MAX_POINT_LIGHTS; // 최대 광원 수 제한
-    }
-    shader->setInt("numPointLights", activePointLights);
-    for (int i = 0; i < activePointLights; ++i) {
-        std::string idx = std::to_string(i);
-        shader->setVec3("pointLights[" + idx + "].position", pointLights[i].position);
-        shader->setVec3("pointLights[" + idx + "].color", pointLights[i].color);
-        shader->setFloat("pointLights[" + idx + "].intensity", pointLights[i].intensity);
-    }
+        // 점광원 유니폼 설정
+        int activePointLights = static_cast<int>(pointLights.size());
+        if (activePointLights > MAX_POINT_LIGHTS) {
+            activePointLights = MAX_POINT_LIGHTS; // 최대 광원 수 제한
+        }
+        shader->setInt("numPointLights", activePointLights);
+        for (int i = 0; i < activePointLights; ++i) {
+            std::string idx = std::to_string(i);
+            shader->setVec3("pointLights[" + idx + "].position", pointLights[i].position);
+            shader->setVec3("pointLights[" + idx + "].color", pointLights[i].color);
+            shader->setFloat("pointLights[" + idx + "].intensity", pointLights[i].intensity);
+        }
 
-    // 발광 비활성화
-    shader->setVec3("emission", glm::vec3(0.0f));
+        // 발광 비활성화
+        shader->setVec3("emission", glm::vec3(0.0f));
 
-    // 객체 렌더링
+        // 객체 렌더링
 
-    skybox->Draw(view, projection);
+        skybox->Draw(view, projection);
 
 
-    if (camera->mode != FIRST_PERSON) {
+        if (camera->mode != FIRST_PERSON) {
+            character->Draw(*shader);
+        }
+
+
+
+        for (auto& obs : obstacles) {
+            obs->Draw(*shader);
+        }
+        if (instance->currentStage == 3) {
+            for (auto& boundary : stage3Boundary) {
+                boundary->Draw(*shader);
+            }
+        }
+
+        for (auto& boundary : stage1Boundary) {
+            boundary->Draw(*shader);
+        }
+
+        // 코인 렌더링 (발광 설정은 여전히 필요 없으므로 emission을 0으로 유지)
+        for (auto& coin : coins) {
+            coin->Draw(*coinShader, view, projection);
+        }
+        shader->Use();
+        glDepthMask(GL_FALSE);
+        stage->Draw(*shader, currentStage);
+        glDepthMask(GL_TRUE);
+
+
+
+
+        // 미니맵 렌더링
+        // 미니맵 1
+        glViewport(1200, 700, 400, 200);
+
+        shader->Use();
+
+        // 직교 투영 행렬 설정
+        float orthoWidth = 30.0f; // 맵 가로 크기
+        float orthoHeight = 20.0f; // 맵 세로 크기
+        view = glm::lookAt(glm::vec3(character->getPosition().x, 30.0f, character->getPosition().z),
+            glm::vec3(character->getPosition().x, 0.0f, character->getPosition().z),
+            glm::vec3(0.0f, 0.0f, -1.0f));
+        projection = glm::ortho(-orthoWidth / 2.0f, orthoWidth / 2.0f,
+            -orthoHeight / 2.0f, orthoHeight / 2.0f,
+            0.1f, 100.0f);
+
+        shader->setMat4("view", view);
+        shader->setMat4("projection", projection);
+
+        shader->setVec3("emission", glm::vec3(0.0f));
+        shader->setInt("numPointLights", pointLights.size());
         character->Draw(*shader);
-    }
-
-
-
-    for (auto& obs : obstacles) {
-        obs->Draw(*shader);
-    }
-    if (instance->currentStage == 3) {
-        for (auto& boundary : stage3Boundary) {
-            boundary->Draw(*shader);
+        for (auto& obs : obstacles) {
+            obs->Draw(*shader);
         }
-    }
-
-    for (auto& boundary : stage1Boundary) {
-        boundary->Draw(*shader);
-    }
-
-    // 코인 렌더링 (발광 설정은 여전히 필요 없으므로 emission을 0으로 유지)
-    for (auto& coin : coins) {
-        coin->Draw(*coinShader, view, projection);
-    }
-    shader->Use();
-    glDepthMask(GL_FALSE);
-    stage->Draw(*shader, currentStage);
-    glDepthMask(GL_TRUE);
-
-
-
-
-    // 미니맵 렌더링
-    // 미니맵 1
-    glViewport(1200, 700, 400, 200);
-
-    shader->Use();
-
-    // 직교 투영 행렬 설정
-    float orthoWidth = 30.0f; // 맵 가로 크기
-    float orthoHeight = 20.0f; // 맵 세로 크기
-    view = glm::lookAt(glm::vec3(character->getPosition().x, 30.0f, character->getPosition().z),
-        glm::vec3(character->getPosition().x, 0.0f, character->getPosition().z),
-        glm::vec3(0.0f, 0.0f, -1.0f));
-    projection = glm::ortho(-orthoWidth / 2.0f, orthoWidth / 2.0f,
-        -orthoHeight / 2.0f, orthoHeight / 2.0f,
-        0.1f, 100.0f);
-
-    shader->setMat4("view", view);
-    shader->setMat4("projection", projection);
-
-    shader->setVec3("emission", glm::vec3(0.0f));
-    shader->setInt("numPointLights", pointLights.size());
-    character->Draw(*shader);
-    for (auto& obs : obstacles) {
-        obs->Draw(*shader);
-    }
-    for (auto& coin : coins) {
-        coin->Draw(*coinShader, view, projection); // 미니맵에서도 코인 전용 셰이더 사용
-    }
-    if (currentStage == 3) {
-        for (auto& boundary : stage3Boundary) {
-            boundary->Draw(*shader);
+        for (auto& coin : coins) {
+            coin->Draw(*coinShader, view, projection); // 미니맵에서도 코인 전용 셰이더 사용
         }
+        if (currentStage == 3) {
+            for (auto& boundary : stage3Boundary) {
+                boundary->Draw(*shader);
+            }
+        }
+
+        stage->Draw(*shader, currentStage);
+
+
+        // 미니맵 2
+        //glViewport(1200, 450, 400, 200); // 미니맵 아래 영역
+        //view = glm::lookAt(glm::vec3(0.0f, 0.0f, 30.0f),
+        //    glm::vec3(0.0f, 0.0f, 0.0f),
+        //    glm::vec3(0.0f, 1.0f, 0.0f));
+        //projection = glm::ortho(-15.0f, 15.0f, -10.0f, 10.0f, 0.1f, 100.0f);
+
+        //shader->setMat4("view", view);
+        //shader->setMat4("projection", projection);
+
+        //// 발광 초기화 및 점광원 비활성화
+        //shader->setVec3("emission", glm::vec3(0.0f));
+        //shader->setInt("numPointLights", 0);
+
+        //// 평면도 그리기
+        //stage->Draw(*shader, currentStage);
+        //character->Draw(*shader);
+        //for (auto& obs : obstacles) {
+        //    obs->Draw(*shader);
+        //}
+        //for (auto& coin : coins) {
+        //    coin->Draw(*coinShader,view,projection);
+        //}
+
+      
     }
-
-    stage->Draw(*shader, currentStage);
-
-
-    // 미니맵 2
-    //glViewport(1200, 450, 400, 200); // 미니맵 아래 영역
-    //view = glm::lookAt(glm::vec3(0.0f, 0.0f, 30.0f),
-    //    glm::vec3(0.0f, 0.0f, 0.0f),
-    //    glm::vec3(0.0f, 1.0f, 0.0f));
-    //projection = glm::ortho(-15.0f, 15.0f, -10.0f, 10.0f, 0.1f, 100.0f);
-
-    //shader->setMat4("view", view);
-    //shader->setMat4("projection", projection);
-
-    //// 발광 초기화 및 점광원 비활성화
-    //shader->setVec3("emission", glm::vec3(0.0f));
-    //shader->setInt("numPointLights", 0);
-
-    //// 평면도 그리기
-    //stage->Draw(*shader, currentStage);
-    //character->Draw(*shader);
-    //for (auto& obs : obstacles) {
-    //    obs->Draw(*shader);
-    //}
-    //for (auto& coin : coins) {
-    //    coin->Draw(*coinShader,view,projection);
-    //}
-
     glutSwapBuffers();
 }
 
