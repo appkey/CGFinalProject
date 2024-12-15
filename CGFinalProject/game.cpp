@@ -73,7 +73,8 @@ void Game::Init() {
     coins.clear();
     obstacles.clear();
     stage1Boundary.clear();
-
+    stage2Boundary.clear();
+    stage3Boundary.clear();
     if (currentStage == 1) {
         std::vector<std::string> faces
         {
@@ -149,8 +150,7 @@ void Game::Init() {
         // 스테이지 2의 초기화 로직 추가
         // 중앙 장애물
         obstacles.push_back(new Obstacle(glm::vec3(-1.0f, 0.0f, -8.0f)));
-        coins.push_back(new Coin(glm::vec3(-8.0, -0.25, -8.0)));
-        coins.push_back(new Coin(glm::vec3(6.0, -0.25, 6.0)));
+
         // 세로 방향 장애물
         for (int i = 1; i <= 4; ++i) {
             obstacles.push_back(new Obstacle(glm::vec3(-1.0f, 0.0f, -8.0f - 2.0f * i)));  // 위쪽
@@ -162,6 +162,45 @@ void Game::Init() {
             obstacles.push_back(new Obstacle(glm::vec3(-1.0f - 2.0f * i, 0.0f, -8.0f)));  // 왼쪽
             obstacles.push_back(new Obstacle(glm::vec3(-1.0f + 2.0f * i, 0.0f, -8.0f)));   // 오른쪽
         }
+
+        const std::vector<std::vector<int>>& tileMap = stage->getTilemap();
+
+        float tileSize = 2.0f; // 타일 한 변의 크기 (Stage::Draw와 동일해야 함)
+        int mapHeight = tileMap.size();
+        int mapWidth = tileMap[0].size();
+
+        for (int z = 0; z < mapHeight; ++z) {
+            for (int x = 0; x < mapWidth; ++x) {
+                if (tileMap[z][x] == 5) {
+                    // 월드 좌표 계산
+                    glm::vec3 pos = glm::vec3(
+                        x * tileSize - (mapWidth / 2) * tileSize,
+                        -0.25f, // 타일의 y 위치(-1.0f) 위에 약간 올려 배치
+                        z * tileSize - (mapHeight / 2) * tileSize - 7.f
+                    );
+
+                    // 원형 장애물 생성 (예: 빨간색, 반지름 1.0f)
+                    stage2Boundary.push_back(new Obstacle(pos));
+
+                }
+                else if (tileMap[z][x] == 6) {
+                    // 월드 좌표 계산
+                    glm::vec3 pos = glm::vec3(
+                        x * tileSize - (mapWidth / 2) * tileSize,
+                        -0.25f, // 타일의 y 위치(-1.0f) 위에 약간 올려 배치
+                        z * tileSize - (mapHeight / 2) * tileSize + 0.f
+                    );
+
+                    // 원형 장애물 생성 (예: 빨간색, 반지름 1.0f)
+                    coins.push_back(new Coin(pos));
+                }
+            }
+            for (auto& boundary : stage2Boundary) {
+                boundary->SetScale(glm::vec3(1.5f, 1.5f, 1.5f));
+            }
+        }
+
+
     }
     else if (currentStage == 3) {
         character->startPos(3);
@@ -327,6 +366,8 @@ void Game::Init() {
                 obstacles.push_back(movingCube);
             }
         }
+      
+
         for (auto& boundary : stage3Boundary) {
             boundary->SetScale(glm::vec3(1.5f, 1.5f, 1.5f));
         }
@@ -367,7 +408,7 @@ void Game::Update(float deltaTime) {
 
         if (CheckCollisionAABBAndSphere(*character, *obstacle)) {
             if (!character->isInvincible) {
-                std::cout << "Collision detected! Character is not invincible." << std::endl;
+                //std::cout << "Collision detected! Character is not invincible." << std::endl;
                 // 캐릭터가 충돌했을 때 초기 위치로 이동
                 character->startPos(currentStage);
                 for (auto& coin : coins) {
@@ -375,7 +416,7 @@ void Game::Update(float deltaTime) {
                 }
             }
             else {
-                std::cout << "Collision detected, but character is invincible." << std::endl;
+               // std::cout << "Collision detected, but character is invincible." << std::endl;
             }
         }
     }
@@ -388,6 +429,17 @@ void Game::Update(float deltaTime) {
             return;
         }
     }
+    if (instance->currentStage == 2) {
+        for (auto& boundary : stage2Boundary) {
+            if (!character->isInvincible && CheckCollisionAABBAndSphere(*character, *boundary)) {
+                character->startPos(currentStage);
+                for (auto& coin : coins) {
+                    coin->SetNotCollected();
+                }
+            }
+        }
+    }
+
     if (instance->currentStage == 3) {
         for (auto& boundary : stage3Boundary) {
             if (!character->isInvincible && CheckCollisionAABBAndSphere(*character, *boundary)) {
@@ -404,7 +456,7 @@ void Game::Update(float deltaTime) {
     int count = 0;
     for (auto& coin : coins) {
         if (!coin->IsCollected() && CheckCollisionCharacterAndCoin(*character, *coin)) {
-            std::cout << "Coin collected!" << std::endl;
+            //std::cout << "Coin collected!" << std::endl;
             coin->SetCollected(); // 코인 수집 상태로 전환
             
         }
@@ -418,7 +470,7 @@ void Game::Update(float deltaTime) {
     if (CheckGoalArea()) {
         std::cout << count << "," << coins.size();
         if (count == coins.size()) {
-            std::cout <<"all clear" << std::endl;
+            //std::cout <<"all clear" << std::endl;
             ++currentStage;
             if (currentStage > 3) {
                 currentStage -= 3;
@@ -532,6 +584,10 @@ void Game::Render() {
                 boundary->Draw(*shader);
             }
         }
+        for (auto& boundary : stage2Boundary) {
+            boundary->Draw(*shader);
+        }
+
         for (auto& boundary : stage1Boundary) {
             boundary->Draw(*shader);
         }
@@ -670,7 +726,7 @@ bool Game::CheckGoalArea()  // 캐릭터 목표 지점 도달 확인
         charPos.z >= goalAreaMin.z && charPos.z <= goalAreaMax.z;
 
     if (inGoalArea) {
-        std::cout << "" << std::endl;
+        //std::cout << "" << std::endl;
     }
     return inGoalArea;
 }

@@ -118,12 +118,6 @@ void Character::Init() {
 
 void Character::ToggleInvincibility() {
     isInvincible = !isInvincible;
-    if (isInvincible) {
-        std::cout << "Character is now invincible!" << std::endl;
-    }
-    else {
-        std::cout << "Character is no longer invincible!" << std::endl;
-    }
 }
 
 void Character::setPosition(const glm::vec3& pos)

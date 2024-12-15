@@ -24,6 +24,7 @@ public:
     std::vector<Coin*> origin_coins;
     std::vector<PointLight> pointLights;
     std::vector<Obstacle*>stage1Boundary;
+    std::vector<Obstacle*>stage2Boundary;
     std::vector<Obstacle*> stage3Boundary;
     Skybox* skybox;
 
