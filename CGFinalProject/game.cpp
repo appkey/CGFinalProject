@@ -337,13 +337,11 @@ void Game::Run() {
 
     glEnable(GL_DEPTH_TEST);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_MULTISAMPLE);
-    //glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK); // Back Face Culling
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     Init();
 
-    // 콜백 함수 설정
     glutDisplayFunc(DisplayCallback);
     glutIdleFunc(DisplayCallback);
     glutKeyboardFunc(KeyboardDownCallback);
@@ -372,6 +370,9 @@ void Game::Update(float deltaTime) {
                 std::cout << "Collision detected! Character is not invincible." << std::endl;
                 // 캐릭터가 충돌했을 때 초기 위치로 이동
                 character->startPos(currentStage);
+                for (auto& coin : coins) {
+                    coin->SetNotCollected();
+                }
             }
             else {
                 std::cout << "Collision detected, but character is invincible." << std::endl;
@@ -381,6 +382,9 @@ void Game::Update(float deltaTime) {
     for (auto& boundary : stage1Boundary) {
         if (CheckCollisionAABBAndSphere(*character, *boundary)) {
             character->startPos(currentStage);
+            for (auto& coin : coins) {
+                coin->SetNotCollected();
+            }
             return;
         }
     }
@@ -388,6 +392,9 @@ void Game::Update(float deltaTime) {
         for (auto& boundary : stage3Boundary) {
             if (!character->isInvincible && CheckCollisionAABBAndSphere(*character, *boundary)) {
                 character->startPos(currentStage);
+                for (auto& coin : coins) {
+                    coin->SetNotCollected();
+                }
             }
         }
     }
@@ -439,40 +446,34 @@ void Game::Render() {
     shader->setMat4("view", view);
     shader->setMat4("projection", projection);
 
-    // 조명 설정
-    glm::vec3 mainLightPos = glm::vec3(0.0f, 20.0f, -10.0f); // 기본 조명 위치
-    glm::vec3 mainLightColor = glm::vec3(1.0f, 1.0f, 1.0f); // 기본 조명 색상 (흰색)
+  
+    glm::vec3 mainLightPos = glm::vec3(0.0f, 20.0f, -10.0f); 
+    glm::vec3 mainLightColor = glm::vec3(1.0f, 1.0f, 1.0f); 
 
-    // 스테이지 2일 경우 조명 위치와 색상 변경
+   
     if (currentStage == 2 && !lightOn) {
-        mainLightPos = glm::vec3(-1.0f, 4.0f, -3.0f); // 중앙 장애물 위치로 조명 위치 변경
-        mainLightColor = glm::vec3(0.1f, 0.1f, 0.1f); // 조명 색상 약하게 설정 (회색)
+        mainLightPos = glm::vec3(-1.0f, 4.0f, -3.0f); 
+        mainLightColor = glm::vec3(0.1f, 0.1f, 0.1f); 
     }
     else if (currentStage == 3 && !lightOn) {
-        mainLightPos = glm::vec3(-1.0f, 4.0f, -3.0f); // 중앙 장애물 위치로 조명 위치 변경
-        mainLightColor = glm::vec3(0.05f, 0.05f, 0.05f); // 조명 색상 약하게 설정 (회색)
+        mainLightPos = glm::vec3(-1.0f, 4.0f, -3.0f);
+        mainLightColor = glm::vec3(0.05f, 0.05f, 0.05f); 
     }
 
     shader->setFloat("alpha", 1.0f);
-    // 주요 광원 유니폼 설정
     shader->setVec3("lightPos", mainLightPos);
     shader->setVec3("lightColor", mainLightColor);
     shader->setVec3("viewPos", camera->Position);
 
-    // 노멀 시각화 여부 설정
+    
     shader->setBool("showNormals", showNormals);
 
-    // 발광 초기화 (필요 시 제거)
+    
     shader->setVec3("emission", glm::vec3(0.0f));
 
-    // 활성화된 점광원 초기화
+    
     pointLights.clear();
     for (auto& coin : coins) {
-        PointLight pl;
-        pl.position = coin->GetPosition();
-        pl.color = glm::vec3(1.0f, 0.843f, 0.0f); // 금색 빛
-        pl.intensity = 0.7f;
-        pointLights.push_back(pl);
         if (!coin->IsCollected()) {
             PointLight pl;
             pl.position = coin->GetPosition();
@@ -523,8 +524,6 @@ void Game::Render() {
             character->Draw(*shader);
         }
 
-
-
         for (auto& obs : obstacles) {
             obs->Draw(*shader);
         }
@@ -533,12 +532,10 @@ void Game::Render() {
                 boundary->Draw(*shader);
             }
         }
-
         for (auto& boundary : stage1Boundary) {
             boundary->Draw(*shader);
         }
 
-        // 코인 렌더링 (발광 설정은 여전히 필요 없으므로 emission을 0으로 유지)
         for (auto& coin : coins) {
             coin->Draw(*coinShader, view, projection);
         }
@@ -547,18 +544,14 @@ void Game::Render() {
         stage->Draw(*shader, currentStage);
         glDepthMask(GL_TRUE);
 
-
-
-
         // 미니맵 렌더링
         // 미니맵 1
         glViewport(1200, 700, 400, 200);
 
         shader->Use();
 
-        // 직교 투영 행렬 설정
-        float orthoWidth = 30.0f; // 맵 가로 크기
-        float orthoHeight = 20.0f; // 맵 세로 크기
+        float orthoWidth = 30.0f; 
+        float orthoHeight = 20.0f;
         view = glm::lookAt(glm::vec3(character->getPosition().x, 30.0f, character->getPosition().z),
             glm::vec3(character->getPosition().x, 0.0f, character->getPosition().z),
             glm::vec3(0.0f, 0.0f, -1.0f));
@@ -568,50 +561,22 @@ void Game::Render() {
 
         shader->setMat4("view", view);
         shader->setMat4("projection", projection);
-
         shader->setVec3("emission", glm::vec3(0.0f));
         shader->setInt("numPointLights", pointLights.size());
+
         character->Draw(*shader);
         for (auto& obs : obstacles) {
             obs->Draw(*shader);
         }
         for (auto& coin : coins) {
-            coin->Draw(*coinShader, view, projection); // 미니맵에서도 코인 전용 셰이더 사용
+            coin->Draw(*coinShader, view, projection); 
         }
         if (currentStage == 3) {
             for (auto& boundary : stage3Boundary) {
                 boundary->Draw(*shader);
             }
         }
-
         stage->Draw(*shader, currentStage);
-
-
-        // 미니맵 2
-        //glViewport(1200, 450, 400, 200); // 미니맵 아래 영역
-        //view = glm::lookAt(glm::vec3(0.0f, 0.0f, 30.0f),
-        //    glm::vec3(0.0f, 0.0f, 0.0f),
-        //    glm::vec3(0.0f, 1.0f, 0.0f));
-        //projection = glm::ortho(-15.0f, 15.0f, -10.0f, 10.0f, 0.1f, 100.0f);
-
-        //shader->setMat4("view", view);
-        //shader->setMat4("projection", projection);
-
-        //// 발광 초기화 및 점광원 비활성화
-        //shader->setVec3("emission", glm::vec3(0.0f));
-        //shader->setInt("numPointLights", 0);
-
-        //// 평면도 그리기
-        //stage->Draw(*shader, currentStage);
-        //character->Draw(*shader);
-        //for (auto& obs : obstacles) {
-        //    obs->Draw(*shader);
-        //}
-        //for (auto& coin : coins) {
-        //    coin->Draw(*coinShader,view,projection);
-        //}
-
-      
     }
     glutSwapBuffers();
 }
@@ -622,55 +587,42 @@ void Game::SwitchCameraMode() {
 
 void Game::MoveStage(int stageNum) {
     currentStage = stageNum;
-    Init(); // 삭제와 초기화를 Init()에서 처리
+    Init();
 }
-
 
 void Game::DisplayCallback() {
     float currentFrame = glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
     instance->deltaTime = currentFrame - instance->lastFrame;
     instance->lastFrame = currentFrame;
-
-    instance->CenterMouse();
-
+    instance->CenterMouse(); // 마우스 중앙처리
     instance->Update(instance->deltaTime);
     instance->Render();
 }
 
 void Game::KeyboardDownCallback(unsigned char key, int x, int y) {
     instance->keys[key] = true;
-
     if (key == 'i') {
         instance->character->ToggleInvincibility();
-    }
-    else if (key == 'c') {
+    }  else if (key == 'c') {
         instance->SwitchCameraMode();
-    }
-    else if (key == '1') {
+    } else if (key == '1') {
         instance->MoveStage(1);
-    }
-    else if (key == '2') {
+    } else if (key == '2') {
         instance->MoveStage(2);
-    }
-    else if (key == '3') {
+    } else if (key == '3') {
         instance->MoveStage(3);
-    }
-    else if (key == 'y') {
+    }  else if (key == 'y') {
         instance->wireframe = !instance->wireframe;
         if (instance->wireframe)
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         else
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    }
-    else if (key == 'n' || key == 'N') {
+    }  else if (key == 'n' || key == 'N') {
         instance->showNormals = !instance->showNormals;
-
-    }
-    else if (key == 'l' || key == 'L') {
+    } else if (key == 'l' || key == 'L') {
         instance->lightOn = !instance->lightOn;
-    }
-    else if (key == 27) { // ESC 키
+    } else if (key == 27) { // ESC 키
         exit(0);
     }
 }
@@ -684,43 +636,35 @@ void Game::ReshapeCallback(int width, int height) {
 }
 
 bool Game::CheckCollisionAABBAndSphere(const Character& character, const Obstacle& obstacle) {
-    // 큐브(AABB)의 중심 및 반쪽 크기
+  
     glm::vec3 aabbMin = character.Position - character.Scale * 0.5f;
     glm::vec3 aabbMax = character.Position + character.Scale * 0.5f;
 
-    // 구의 중심 및 반지름
     glm::vec3 sphereCenter = obstacle.Position;
-    float sphereRadius = 0.5f * obstacle.Scale.x; // 구의 반지름 (필요에 따라 조정)
+    float sphereRadius = 0.5f * obstacle.Scale.x; // Collision Shpere radius
 
-    // AABB의 각 축에서 구의 중심을 투영
     glm::vec3 closestPoint = glm::clamp(sphereCenter, aabbMin, aabbMax);
 
-    // 투영된 점과 구의 중심 간 거리 계산
     float distance = glm::length(closestPoint - sphereCenter);
-
-    // 충돌 여부 확인
     return distance <= sphereRadius;
 
 }
 
 
-void Game::CenterMouse() {
+void Game::CenterMouse() { // 마우스 중심으로 옮겨 마우스 나가는거 방지 
     int centerX = glutGet(GLUT_WINDOW_WIDTH) / 2;
     int centerY = glutGet(GLUT_WINDOW_HEIGHT) / 2;
 
-    // 마우스를 창의 중심으로 이동
     glutWarpPointer(centerX, centerY);
 
-    // 이전 마우스 위치를 중앙으로 설정
     lastMouseX = centerX;
     lastMouseY = centerY;
 }
 
-bool Game::CheckGoalArea()
+bool Game::CheckGoalArea()  // 캐릭터 목표 지점 도달 확인
 {
      glm::vec3 charPos = character->Position;
 
-    // 캐릭터가 목표 영역 안에 있는지 확인
     bool inGoalArea = 
         charPos.x >= goalAreaMin.x && charPos.x <= goalAreaMax.x &&
         charPos.z >= goalAreaMin.z && charPos.z <= goalAreaMax.z;
@@ -733,31 +677,22 @@ bool Game::CheckGoalArea()
 
  void Game::MouseCallback(int button, int state, int x, int y) {
         if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-            // 윈도우 좌표를 OpenGL 좌표로 변환
             int viewport[4];
             glGetIntegerv(GL_VIEWPORT, viewport);
-
             float winX = static_cast<float>(x);
-            float winY = static_cast<float>(viewport[3] - y); // OpenGL의 Y는 아래에서 위로
-
+            float winY = static_cast<float>(viewport[3] - y); 
             float winZ;
             glReadPixels(x, viewport[3] - y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ);
-
             glm::mat4 view = instance->camera->GetViewMatrix();
             glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1600.0f / 900.0f, 0.1f, 100.0f);
-
             glm::vec4 viewportVec = glm::vec4(viewport[0], viewport[1], viewport[2], viewport[3]);
-
-            // 윈도우 좌표를 월드 좌표로 변환
             glm::vec3 screenPos(winX, winY, winZ);
             glm::vec3 worldPos = glm::unProject(screenPos, view, projection, viewportVec);
-
             std::cout << "Mouse clicked at: "
                 << "Window coords: (" << x << ", " << y << "), "
                 << "World coords: (" << worldPos.x << ", " << worldPos.y << ", " << worldPos.z << ")"
                 << std::endl;
         }
-    
 }
 
 void Game::MotionCallback(int x, int y) {

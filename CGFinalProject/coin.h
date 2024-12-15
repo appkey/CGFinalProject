@@ -14,7 +14,9 @@ public:
     void Draw(Shader& shader, const glm::mat4& view, const glm::mat4& projection);
 
     void SetCollected();
+    void SetNotCollected();
     bool IsCollected() const;
+    
 
     const glm::vec3& GetPosition() const;
 

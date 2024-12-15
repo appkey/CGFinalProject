@@ -87,6 +87,11 @@ void Coin::SetCollected() {
     collected = true;
 }
 
+void Coin::SetNotCollected()
+{
+    collected = false;
+}
+
 bool Coin::IsCollected() const {
     return collected;
 }
