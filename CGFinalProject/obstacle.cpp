@@ -141,8 +141,9 @@ void Obstacle::Update(float deltaTime, int currentStage) {
     static int state = 0;
     static float elapsedTime = 0.0f;
     static float zOffset = 0.0f;
+    static float zOffset2 = 0.0f;
     static bool movingUp = true;
-
+    static bool movingForward = true;
 
     if (update_mode == 0) {
 
@@ -224,6 +225,17 @@ void Obstacle::Update(float deltaTime, int currentStage) {
         else {
             zOffset -= 1.0f * deltaTime;
             if (zOffset <= -2.0f) movingUp = false;
+        }
+        Position.z = StartPostion.z - zOffset;
+    }
+    else if (update_mode == 7) {
+        if (!movingForward) {
+            zOffset2 += 0.5f * deltaTime;
+            if (zOffset2 >= 4.0f) movingForward = true;
+        }
+        else {
+            zOffset2 -= 0.5f * deltaTime;
+            if (zOffset2 <= -2.0f) movingForward = false;
         }
         Position.z = StartPostion.z - zOffset;
     }
