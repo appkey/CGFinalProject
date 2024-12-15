@@ -41,8 +41,9 @@ public:
     void SwitchCameraMode();
     void MoveStage(int);
     bool CheckCollisionAABBAndSphere(const Character&, const Obstacle&);
+    bool CheckCollisionCharacterAndCoin(const Character& character, Coin& coin);
     void CenterMouse();
-
+    bool CheckGoalArea();
 
     // 콜백 함수들
     static void DisplayCallback();
@@ -52,7 +53,10 @@ public:
     static void MouseCallback(int button, int state, int x, int y); // 마우스 클릭 콜백
     static void MotionCallback(int x, int y);
     static void PassiveMotionCallback(int x, int y);
+    
 private:
+    glm::vec3 goalAreaMin; // 목표 영역의 최소 좌표
+    glm::vec3 goalAreaMax; // 목표 영역의 최대 좌표
     static Game* instance;
     float deltaTime;
     float lastFrame;

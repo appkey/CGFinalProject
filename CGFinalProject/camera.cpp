@@ -48,8 +48,6 @@ void Camera::SwitchMode() {
 
 // 1인칭 모드 초기화
 void Camera::SetFirstPerson() {
-    Pitch = 0.0f; // 수직 방향 초기화
-    Yaw = -90.0f; // Z축 바라보기 초기화
     MouseSensitivity = 0.1f; // 민감도 설정
 
     // 방향 벡터 재계산
@@ -62,7 +60,7 @@ void Camera::SetFirstPerson() {
 
 // 3인칭 모드 초기화
 void Camera::SetThirdPerson() {
-    Position = glm::vec3(0.0f, 3.0f, 7.0f); // 캐릭터를 중심으로 고정 거리 설정
+    Position = glm::vec3(0.0f, -3.0f,-7.0f); // 캐릭터를 중심으로 고정 거리 설정
     Target = glm::vec3(0.0f, 0.0f, 0.0f);   // 캐릭터 중심 바라보기
     Up = glm::vec3(0.0f, 1.0f, 0.0f);       // 상향 벡터 초기화
 }
@@ -98,8 +96,8 @@ void Camera::update(Character& character, float deltaTime, float mouseOffsetX, f
     else if (mode == THIRD_PERSON) {
         // 캐릭터를 따라가는 3인칭 카메라
           // 3인칭 카메라 회전 및 위치 계산
-        Yaw += mouseOffsetX * MouseSensitivity; // 좌우 회전
-        Pitch += mouseOffsetY * MouseSensitivity; // 위아래 회전
+        Yaw += (mouseOffsetX * MouseSensitivity); // 좌우 회전
+        Pitch += (mouseOffsetY * MouseSensitivity); // 위아래 회전
 
         // Pitch 제한
         if (Pitch > 45.0f) Pitch = 45.0f;

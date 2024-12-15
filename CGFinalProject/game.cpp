@@ -52,6 +52,23 @@ void Game::Init() {
 
     CenterMouse();
 
+    if (currentStage == 1) {
+        goalAreaMin = glm::vec3(-2.f, -0.5f, -34.0f); // 예시 최소 좌표
+        goalAreaMax = glm::vec3(2.0f, 0.5f, -31.0f);  // 예시 최대 좌표
+    }
+    else if (currentStage == 2) {
+        goalAreaMin = glm::vec3(11.0f, -0.5f, -5.0f); // 예시 최소 좌표
+        goalAreaMax = glm::vec3(15.0f, 0.5f, -3.0f);   // 예시 최대 좌표
+
+     
+
+    }
+    else if (currentStage == 3) {
+        goalAreaMin = glm::vec3(14.5f, -0.5f, -20.0f); // 예시 최소 좌표
+        goalAreaMax = glm::vec3(19.0f, 0.5f, -18.0f);  // 예시 최대 좌표
+    }
+
+
 
     coins.clear();
     obstacles.clear();
@@ -368,6 +385,33 @@ void Game::Update(float deltaTime) {
     for (auto& coin : coins) {
         coin->Update(deltaTime);
     }
+    int count = 0;
+    for (auto& coin : coins) {
+        if (!coin->IsCollected() && CheckCollisionCharacterAndCoin(*character, *coin)) {
+            std::cout << "Coin collected!" << std::endl;
+            coin->SetCollected(); // 코인 수집 상태로 전환
+            
+        }
+    }
+    for (auto& coin : coins) {
+        if (coin->IsCollected()) {
+            count++;
+        }
+    }
+    
+    if (CheckGoalArea()) {
+        std::cout << count << "," << coins.size();
+        if (count == coins.size()) {
+            std::cout <<"all clear" << std::endl;
+            ++currentStage;
+            if (currentStage > 3) {
+                currentStage -= 3;
+            }
+            MoveStage(currentStage);
+        }
+        
+    }
+
     camera->update(*character, deltaTime, mouseOffsetX, mouseOffsetY);
 
 }
@@ -415,11 +459,13 @@ void Game::Render() {
     // 활성화된 점광원 초기화
     pointLights.clear();
     for (auto& coin : coins) {
-        PointLight pl;
-        pl.position = coin->GetPosition();
-        pl.color = glm::vec3(1.0f, 0.843f, 0.0f); // 금색 빛
-        pl.intensity = 0.7f; 
-        pointLights.push_back(pl);
+        if (!coin->IsCollected()) {
+            PointLight pl;
+            pl.position = coin->GetPosition();
+            pl.color = glm::vec3(1.0f, 0.843f, 0.0f); // 금색 빛
+            pl.intensity = 0.7f;
+            pointLights.push_back(pl);
+        }
     }
 
     if (instance->currentStage == 2) {
@@ -655,12 +701,48 @@ void Game::CenterMouse() {
     lastMouseY = centerY;
 }
 
-void Game::MouseCallback(int button, int state, int x, int y) {
-    if (button == GLUT_LEFT_BUTTON) {
-        instance->leftMouseButtonDown = (state == GLUT_DOWN);
-        instance->lastMouseX = x;
-        instance->lastMouseY = y;
+bool Game::CheckGoalArea()
+{
+     glm::vec3 charPos = character->Position;
+
+    // 캐릭터가 목표 영역 안에 있는지 확인
+    bool inGoalArea = 
+        charPos.x >= goalAreaMin.x && charPos.x <= goalAreaMax.x &&
+        charPos.z >= goalAreaMin.z && charPos.z <= goalAreaMax.z;
+
+    if (inGoalArea) {
+        std::cout << "" << std::endl;
     }
+    return inGoalArea;
+}
+
+ void Game::MouseCallback(int button, int state, int x, int y) {
+        if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+            // 윈도우 좌표를 OpenGL 좌표로 변환
+            int viewport[4];
+            glGetIntegerv(GL_VIEWPORT, viewport);
+
+            float winX = static_cast<float>(x);
+            float winY = static_cast<float>(viewport[3] - y); // OpenGL의 Y는 아래에서 위로
+
+            float winZ;
+            glReadPixels(x, viewport[3] - y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ);
+
+            glm::mat4 view = instance->camera->GetViewMatrix();
+            glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1600.0f / 900.0f, 0.1f, 100.0f);
+
+            glm::vec4 viewportVec = glm::vec4(viewport[0], viewport[1], viewport[2], viewport[3]);
+
+            // 윈도우 좌표를 월드 좌표로 변환
+            glm::vec3 screenPos(winX, winY, winZ);
+            glm::vec3 worldPos = glm::unProject(screenPos, view, projection, viewportVec);
+
+            std::cout << "Mouse clicked at: "
+                << "Window coords: (" << x << ", " << y << "), "
+                << "World coords: (" << worldPos.x << ", " << worldPos.y << ", " << worldPos.z << ")"
+                << std::endl;
+        }
+    
 }
 
 void Game::MotionCallback(int x, int y) {
@@ -716,4 +798,22 @@ void Game::PassiveMotionCallback(int x, int y) {
 
     // 마우스를 창의 중심으로 이동
     instance->CenterMouse();
+}
+
+bool Game::CheckCollisionCharacterAndCoin(const Character& character, Coin& coin) {
+   
+    glm::vec3 charMin = character.Position - character.Scale * 0.5f;
+    glm::vec3 charMax = character.Position + character.Scale * 0.5f;
+
+    
+    float coinRadius = 0.5f; // 코인의 반지름
+    glm::vec3 coinMin = coin.GetPosition() - glm::vec3(coinRadius);
+    glm::vec3 coinMax = coin.GetPosition() + glm::vec3(coinRadius);
+ 
+    bool collisionX = charMax.x > coinMin.x && charMin.x < coinMax.x;
+    bool collisionY = charMax.y > coinMin.y && charMin.y < coinMax.y;
+    bool collisionZ = charMax.z > coinMin.z && charMin.z < coinMax.z;
+
+    return collisionX && collisionY && collisionZ;
+
 }
