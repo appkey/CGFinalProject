@@ -659,7 +659,7 @@ void Game::DisplayCallback() {
 
 void Game::KeyboardDownCallback(unsigned char key, int x, int y) {
     instance->keys[key] = true;
-    if (key == 'i') {
+    if (key == 'i' || key == "I" )  {
         instance->character->ToggleInvincibility();
     }  else if (key == 'c' || key=='C') {
         instance->SwitchCameraMode();
@@ -680,7 +680,8 @@ void Game::KeyboardDownCallback(unsigned char key, int x, int y) {
         instance->showNormals = !instance->showNormals;
     } else if (key == 'l' || key == 'L') {
         instance->lightOn = !instance->lightOn;
-    }  else if(key == 'm') {
+    }
+    else if (key == 'm' || key == 'M') {
         instance->stopMouse = !instance->stopMouse;
         if (instance-> stopMouse) 
             glutSetCursor(GLUT_CURSOR_INHERIT);

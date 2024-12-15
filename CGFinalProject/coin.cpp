@@ -86,7 +86,7 @@ void Coin::Draw(Shader& shader, const glm::mat4& view, const glm::mat4& projecti
 void Coin::SetCollected() {
     collected = true;
 }
-
+    
 void Coin::SetNotCollected()
 {
     collected = false;
